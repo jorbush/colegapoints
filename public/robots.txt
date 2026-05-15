@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://colegapoints.vercel.app/sitemap-index.xml

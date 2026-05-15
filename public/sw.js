@@ -4,13 +4,13 @@ self.addEventListener('push', (event) => {
   try {
     payload = event.data.json();
   } catch {
-    payload = { title: 'ColegaPoints', body: event.data.text() };
+    payload = { title: 'colegapoints', body: event.data.text() };
   }
 
   const options = {
     body: payload.body,
-    icon: payload.icon ?? '/icon-192.png',
-    badge: '/icon-192.png',
+    icon: payload.icon ?? '/web-app-manifest-192x192.png',
+    badge: '/web-app-manifest-192x192.png',
     vibrate: [100, 50, 100],
     data: payload.url ? { url: payload.url } : undefined,
   };

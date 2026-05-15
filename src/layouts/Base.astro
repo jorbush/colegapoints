@@ -4,7 +4,7 @@ interface Props {
   description?: string;
 }
 const {
-  title = 'ColegaPoints',
+  title = "ColegaPoints",
   description = "Track friend points with your crew. Give points, take points, see who's the best colega.",
 } = Astro.props;
 ---
@@ -15,15 +15,38 @@ const {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
-    <title>{title} — ColegaPoints</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#6d28d9" />
+    <title>{title === "ColegaPoints" ? title : `${title} — ColegaPoints`}</title>
+
+    <!-- SEO & Social Meta Tags -->
+    <link rel="canonical" href={Astro.url} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={Astro.url} />
+    <meta property="og:site_name" content="ColegaPoints" />
+    <meta property="og:image" content={new URL('/og-image.png', Astro.url)} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={new URL('/og-image.png', Astro.url)} />
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Favicons & Manifest -->
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="colegapoints" />
+    <link rel="manifest" href="/site.webmanifest" />
   </head>
   <body class="min-h-screen">
     <slot />
@@ -31,5 +54,5 @@ const {
 </html>
 
 <style is:global>
-  @import '../styles/global.css';
+  @import "../styles/global.css";
 </style>
