@@ -1,0 +1,92 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { db } from '../../../db';
+import { groups, members, pointEvents } from '../../../db/schema';
+import { eq } from 'drizzle-orm';
+
+const { id } = Astro.params;
+if (!id) return Astro.redirect('/');
+
+const group = await db.query.groups.findFirst({ where: eq(groups.id, id) });
+if (!group) return Astro.redirect('/');
+
+const groupMembers = await db.query.members.findMany({
+  where: eq(members.groupId, id),
+});
+const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
+
+const events = await db.query.pointEvents.findMany({
+  where: eq(pointEvents.groupId, id),
+  orderBy: (e, { desc }) => [desc(e.createdAt)],
+});
+---
+
+<Base title={`${group.name} — History`} description={`Full point history for ${group.name}`}>
+  <div class="max-w-2xl mx-auto px-4 py-10">
+
+    <header class="mb-8 animate-slide-up">
+      <a href={`/group/${id}`} class="text-xs text-[var(--color-muted)] hover:text-[var(--color-brand)] transition-colors inline-flex items-center gap-1 mb-2">
+        ← Back to {group.name}
+      </a>
+      <h1 class="text-3xl font-extrabold gradient-text">Point History</h1>
+      <p class="text-[var(--color-muted)] text-sm mt-1">{events.length} event{events.length !== 1 ? 's' : ''} total</p>
+    </header>
+
+    {events.length === 0 ? (
+      <div class="glass p-12 text-center text-[var(--color-muted)]">
+        <div class="text-5xl mb-4">🤷</div>
+        <p class="font-medium">No point events yet.</p>
+        <p class="text-sm mt-1">Go give your colegas some points!</p>
+      </div>
+    ) : (
+      <ul class="flex flex-col gap-3 stagger">
+        {events.map((ev) => {
+          const from = memberMap[ev.fromMemberId];
+          const to = memberMap[ev.toMemberId];
+          const positive = ev.delta > 0;
+          const date = new Date(ev.createdAt);
+          if (!from || !to) return null;
+          return (
+            <li class="glass p-4 flex items-center gap-4 animate-slide-up">
+              <!-- Delta badge -->
+              <div
+                class={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-extrabold flex-shrink-0 ${
+                  positive
+                    ? 'bg-[var(--color-positive)]/15 text-[var(--color-positive)]'
+                    : 'bg-[var(--color-negative)]/15 text-[var(--color-negative)]'
+                }`}
+              >
+                {positive ? '+' : ''}{ev.delta}
+              </div>
+              <!-- Info -->
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-medium">
+                  <span class="font-bold">{from.name}</span>
+                  <span class="text-[var(--color-muted)]"> {positive ? 'gave' : 'took'} </span>
+                  <span class={`font-bold ${positive ? 'text-[var(--color-positive)]' : 'text-[var(--color-negative)]'}`}>
+                    {Math.abs(ev.delta)} pt{Math.abs(ev.delta) !== 1 ? 's' : ''}
+                  </span>
+                  <span class="text-[var(--color-muted)]"> {positive ? 'to' : 'from'} </span>
+                  <span class="font-bold">{to.name}</span>
+                </div>
+                {ev.reason && (
+                  <div class="mt-1 text-xs text-[var(--color-muted)] truncate italic">"{ev.reason}"</div>
+                )}
+                <div class="mt-0.5 text-xs text-[var(--color-muted)]">
+                  {date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                  {' · '}{date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                </div>
+              </div>
+              <!-- Avatars -->
+              <div class="text-2xl flex-shrink-0 flex flex-col items-center gap-0.5">
+                <span title={from.name}>{from.avatarEmoji}</span>
+                <span class="text-xs text-[var(--color-muted)]">{positive ? '→' : '←'}</span>
+                <span title={to.name}>{to.avatarEmoji}</span>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    )}
+  </div>
+</Base>

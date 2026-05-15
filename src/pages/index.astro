@@ -1,0 +1,98 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Home">
+  <main class="max-w-lg mx-auto px-4 py-20 flex flex-col items-center gap-12">
+    <!-- Logo / Hero -->
+    <header class="text-center animate-slide-up">
+      <div class="text-7xl mb-4 animate-pop-in" style="animation-delay:100ms">⭐</div>
+      <h1 class="text-5xl font-extrabold gradient-text leading-tight mb-3">ColegaPoints</h1>
+      <p class="text-lg text-[var(--color-muted)] max-w-xs mx-auto leading-relaxed">
+        The scoreboard your friend group actually deserves. Give points, take points, keep the receipts.
+      </p>
+    </header>
+
+    <!-- Create group card -->
+    <section class="glass p-8 w-full animate-slide-up" style="animation-delay:150ms">
+      <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+        <span>🎉</span> Start a new group
+      </h2>
+      <form id="create-group-form" class="flex flex-col gap-4">
+        <div class="flex flex-col gap-1">
+          <label for="group-name" class="text-sm font-medium text-[var(--color-muted)]">Group name *</label>
+          <input
+            id="group-name"
+            name="name"
+            type="text"
+            required
+            placeholder="e.g. The Gang, Squad Goals…"
+            maxlength="50"
+            class="bg-[var(--color-surface-overlay)] border border-[var(--color-border)] rounded-xl px-4 py-3 text-[var(--color-text)] placeholder-[var(--color-muted)] focus:outline-none focus:border-[var(--color-brand)] transition-colors"
+          />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label for="group-desc" class="text-sm font-medium text-[var(--color-muted)]">Description (optional)</label>
+          <input
+            id="group-desc"
+            name="description"
+            type="text"
+            placeholder="What's this crew about?"
+            maxlength="120"
+            class="bg-[var(--color-surface-overlay)] border border-[var(--color-border)] rounded-xl px-4 py-3 text-[var(--color-text)] placeholder-[var(--color-muted)] focus:outline-none focus:border-[var(--color-brand)] transition-colors"
+          />
+        </div>
+        <button
+          id="create-btn"
+          type="submit"
+          class="mt-2 w-full py-3.5 rounded-xl font-bold text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] animate-pulse-glow"
+          style="background: linear-gradient(135deg, oklch(0.55 0.28 280), oklch(0.60 0.26 310))"
+        >
+          Create Group →
+        </button>
+      </form>
+      <p id="create-error" class="text-[var(--color-negative)] text-sm mt-3 hidden"></p>
+    </section>
+
+    <!-- Already have a link hint -->
+    <p class="text-sm text-[var(--color-muted)] animate-fade-in" style="animation-delay:300ms">
+      Got an invite link? Just open it — you'll join automatically. 🔗
+    </p>
+  </main>
+</Base>
+
+<script>
+  const form = document.getElementById('create-group-form') as HTMLFormElement;
+  const btn = document.getElementById('create-btn') as HTMLButtonElement;
+  const errorEl = document.getElementById('create-error') as HTMLParagraphElement;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    btn.disabled = true;
+    btn.textContent = 'Creating…';
+    errorEl.classList.add('hidden');
+
+    const data = new FormData(form);
+    try {
+      const res = await fetch('/api/groups', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: data.get('name'),
+          description: data.get('description') || null,
+        }),
+      });
+      const json = await res.json();
+      if (res.ok) {
+        window.location.href = `/group/${json.id}`;
+      } else {
+        throw new Error(json.error ?? 'Unknown error');
+      }
+    } catch (err: any) {
+      errorEl.textContent = err.message;
+      errorEl.classList.remove('hidden');
+      btn.disabled = false;
+      btn.textContent = 'Create Group →';
+    }
+  });
+</script>
