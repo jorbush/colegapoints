@@ -65,6 +65,14 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
         >
           📜 History
         </a>
+        <!-- Leave button — shown via JS only if current user is a member -->
+        <button
+          id="leave-group-btn"
+          title="Leave this group"
+          class="hidden glass px-3 py-2 text-sm font-medium rounded-xl text-[var(--color-negative)] hover:border-[var(--color-negative)] transition-all active:scale-95"
+        >
+          🚪 Leave
+        </button>
       </div>
     </header>
 
@@ -269,17 +277,62 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
         <span class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 push-thumb"></span>
       </button>
     </div>
+    <!-- Leave Group Confirmation Modal -->
+    <div id="leave-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background:oklch(0 0 0/0.75);backdrop-filter:blur(8px)">
+      <div class="glass p-7 w-full max-w-sm animate-pop-in">
+        <div class="text-4xl text-center mb-4">🚪</div>
+        <h3 class="text-xl font-bold text-center mb-2">Leave group?</h3>
+        <p class="text-sm text-[var(--color-muted)] text-center mb-6 leading-relaxed">
+          You'll be removed from <span id="leave-group-name" class="font-semibold text-[var(--color-text)]"></span>.
+          Your point history will stay, but you won't appear on the leaderboard anymore.
+        </p>
+        <div class="flex gap-3">
+          <button
+            id="leave-cancel-btn"
+            class="flex-1 py-3 rounded-xl font-semibold glass hover:border-[var(--color-border)] transition-all active:scale-95"
+          >
+            Cancel
+          </button>
+          <button
+            id="leave-confirm-btn"
+            class="flex-1 py-3 rounded-xl font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
+            style="background: linear-gradient(135deg, oklch(0.50 0.22 15), oklch(0.55 0.20 25))"
+          >
+            Leave
+          </button>
+        </div>
+        <p id="leave-error" class="text-[var(--color-negative)] text-xs text-center mt-3 hidden"></p>
+      </div>
+    </div>
   </div>
 </Base>
 
-<script define:vars={{ groupId: id, groupMembers, vapidPublicKey: import.meta.env.VAPID_PUBLIC_KEY ?? '' }}>
+<script define:vars={{ groupId: id, groupName: group.name, groupDescription: group.description ?? '', groupMembers, vapidPublicKey: import.meta.env.VAPID_PUBLIC_KEY ?? '' }}>
   const STORAGE_KEY = `cp_member_${groupId}`;
+  const GROUPS_KEY = 'cp_groups';
 
   // ── Helpers ─────────────────────────────────────────────────────────────────
   function getSavedMember() {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null'); } catch { return null; }
   }
   function saveMember(m) { localStorage.setItem(STORAGE_KEY, JSON.stringify(m)); }
+
+  function saveGroupToList(member) {
+    try {
+      const existing = JSON.parse(localStorage.getItem(GROUPS_KEY) ?? '[]');
+      const filtered = existing.filter((g) => g.groupId !== groupId);
+      filtered.unshift({
+        groupId,
+        groupName: groupName,
+        groupDescription: groupDescription,
+        memberId: member.id,
+        memberName: member.name,
+        memberEmoji: member.avatarEmoji,
+        joinedAt: Date.now(),
+      });
+      localStorage.setItem(GROUPS_KEY, JSON.stringify(filtered));
+    } catch {}
+  }
 
   // ── Init ────────────────────────────────────────────────────────────────────
   const saved = getSavedMember();
@@ -289,6 +342,7 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
   } else {
     document.getElementById('add-points-section')?.classList.remove('hidden');
     document.getElementById('push-toggle-section')?.classList.remove('hidden');
+    document.getElementById('leave-group-btn')?.classList.remove('hidden');
     initPushToggle(saved);
   }
 
@@ -319,6 +373,7 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
     const json = await res.json();
     if (res.ok) {
       saveMember(json);
+      saveGroupToList(json);
       window.location.reload();
     } else {
       errorEl.textContent = json.error; errorEl.classList.remove('hidden');
@@ -456,4 +511,53 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
       }
     });
   }
+
+  // ── Leave group ────────────────────────────────────────────────────────────────
+  const leaveModal   = document.getElementById('leave-modal');
+  const leaveNameEl  = document.getElementById('leave-group-name');
+  const leaveErrorEl = document.getElementById('leave-error');
+  const leaveConfirm = document.getElementById('leave-confirm-btn');
+
+  if (leaveNameEl) leaveNameEl.textContent = groupName;
+
+  function openLeaveModal()  { leaveModal?.classList.remove('hidden'); leaveModal?.classList.add('flex'); }
+  function closeLeaveModal() { leaveModal?.classList.remove('flex');   leaveModal?.classList.add('hidden'); leaveErrorEl?.classList.add('hidden'); }
+
+  document.getElementById('leave-group-btn')?.addEventListener('click', openLeaveModal);
+  document.getElementById('leave-cancel-btn')?.addEventListener('click', closeLeaveModal);
+  leaveModal?.addEventListener('click', (e) => { if (e.target === leaveModal) closeLeaveModal(); });
+
+  leaveConfirm?.addEventListener('click', async () => {
+    if (!saved) return;
+    leaveConfirm.disabled = true;
+    leaveConfirm.textContent = 'Leaving…';
+    leaveErrorEl?.classList.add('hidden');
+
+    try {
+      const res = await fetch(`/api/groups/${groupId}/leave`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memberId: saved.id }),
+      });
+
+      if (!res.ok) {
+        const json = await res.json();
+        throw new Error(json.error ?? 'Failed to leave group');
+      }
+
+      // Clear localStorage
+      localStorage.removeItem(STORAGE_KEY);
+      try {
+        const groups = JSON.parse(localStorage.getItem(GROUPS_KEY) ?? '[]');
+        localStorage.setItem(GROUPS_KEY, JSON.stringify(groups.filter((g) => g.groupId !== groupId)));
+      } catch {}
+
+      window.location.href = '/';
+    } catch (err) {
+      leaveErrorEl.textContent = err.message;
+      leaveErrorEl?.classList.remove('hidden');
+      leaveConfirm.disabled = false;
+      leaveConfirm.textContent = 'Leave';
+    }
+  });
 </script>

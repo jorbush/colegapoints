@@ -3,15 +3,33 @@ import Base from '../layouts/Base.astro';
 ---
 
 <Base title="Home">
-  <main class="max-w-lg mx-auto px-4 py-20 flex flex-col items-center gap-12">
+  <main class="max-w-lg mx-auto px-4 py-16 flex flex-col gap-10">
+
     <!-- Logo / Hero -->
     <header class="text-center animate-slide-up">
       <div class="text-7xl mb-4 animate-pop-in" style="animation-delay:100ms">⭐</div>
       <h1 class="text-5xl font-extrabold gradient-text leading-tight mb-3">ColegaPoints</h1>
       <p class="text-lg text-[var(--color-muted)] max-w-xs mx-auto leading-relaxed">
-        The scoreboard your friend group actually deserves. Give points, take points, keep the receipts.
+        The scoreboard your friend group actually deserves.
       </p>
     </header>
+
+    <!-- Your Groups (populated by JS from localStorage) -->
+    <section id="your-groups-section" class="hidden animate-slide-up" style="animation-delay:100ms">
+      <h2 class="text-sm font-semibold text-[var(--color-muted)] uppercase tracking-widest mb-3">
+        Your Groups
+      </h2>
+      <ul id="your-groups-list" class="flex flex-col gap-3 stagger">
+        <!-- injected by JS -->
+      </ul>
+    </section>
+
+    <!-- Divider (shown only when groups exist) -->
+    <div id="divider" class="hidden flex items-center gap-3 text-[var(--color-muted)]">
+      <div class="flex-1 h-px bg-[var(--color-border)]"></div>
+      <span class="text-xs font-medium">or start fresh</span>
+      <div class="flex-1 h-px bg-[var(--color-border)]"></div>
+    </div>
 
     <!-- Create group card -->
     <section class="glass p-8 w-full animate-slide-up" style="animation-delay:150ms">
@@ -54,16 +72,74 @@ import Base from '../layouts/Base.astro';
       <p id="create-error" class="text-[var(--color-negative)] text-sm mt-3 hidden"></p>
     </section>
 
-    <!-- Already have a link hint -->
-    <p class="text-sm text-[var(--color-muted)] animate-fade-in" style="animation-delay:300ms">
+    <!-- Invite hint -->
+    <p class="text-center text-sm text-[var(--color-muted)] animate-fade-in" style="animation-delay:300ms">
       Got an invite link? Just open it — you'll join automatically. 🔗
     </p>
   </main>
 </Base>
 
 <script>
-  const form = document.getElementById('create-group-form') as HTMLFormElement;
-  const btn = document.getElementById('create-btn') as HTMLButtonElement;
+  // ── Your Groups ────────────────────────────────────────────────────────────
+  function loadGroups() {
+    try {
+      return JSON.parse(localStorage.getItem('cp_groups') ?? '[]');
+    } catch {
+      return [];
+    }
+  }
+
+  function renderGroups() {
+    const groups = loadGroups();
+    if (!groups.length) return;
+
+    const section = document.getElementById('your-groups-section')!;
+    const list    = document.getElementById('your-groups-list')!;
+    const divider = document.getElementById('divider')!;
+
+    section.classList.remove('hidden');
+    divider.classList.remove('hidden');
+    divider.classList.add('flex');
+
+    list.innerHTML = '';
+    groups.forEach((g: any, i: number) => {
+      const li = document.createElement('li');
+      li.className = 'animate-slide-up';
+      li.style.animationDelay = `${i * 60}ms`;
+      li.innerHTML = `
+        <a href="/group/${g.groupId}"
+          class="glass flex items-center gap-4 p-4 rounded-2xl hover:border-[var(--color-brand)] transition-all duration-200 group block"
+          aria-label="Go to ${g.groupName}">
+          <!-- Emoji avatar -->
+          <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"
+               style="background:oklch(0.65 0.25 280/0.15)">
+            ${g.memberEmoji}
+          </div>
+          <!-- Info -->
+          <div class="flex-1 min-w-0">
+            <div class="font-bold text-base truncate group-hover:text-[var(--color-brand-light)] transition-colors">
+              ${g.groupName}
+            </div>
+            ${g.groupDescription ? `<div class="text-xs text-[var(--color-muted)] truncate mt-0.5">${g.groupDescription}</div>` : ''}
+            <div class="text-xs text-[var(--color-muted)] mt-1">
+              You joined as <span class="font-semibold text-[var(--color-text)]">${g.memberName}</span>
+            </div>
+          </div>
+          <!-- Arrow -->
+          <div class="text-[var(--color-muted)] group-hover:text-[var(--color-brand)] transition-colors text-xl flex-shrink-0">
+            →
+          </div>
+        </a>
+      `;
+      list.appendChild(li);
+    });
+  }
+
+  renderGroups();
+
+  // ── Create Group ──────────────────────────────────────────────────────────
+  const form    = document.getElementById('create-group-form') as HTMLFormElement;
+  const btn     = document.getElementById('create-btn') as HTMLButtonElement;
   const errorEl = document.getElementById('create-error') as HTMLParagraphElement;
 
   form.addEventListener('submit', async (e) => {
