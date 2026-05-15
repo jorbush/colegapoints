@@ -1,4 +1,4 @@
-# Astro Starter Kit: Minimal
+# ColegaPoints
 
 ```sh
 npm create astro@latest -- --template minimal
