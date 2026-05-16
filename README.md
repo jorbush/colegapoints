@@ -1,43 +1,53 @@
-# ColegaPoints
+# ⭐ ColegaPoints ⭐
+
+**The community ledger for friends, teams, and colleagues.**
+
+ColegaPoints is a lightweight, community-driven point tracking system designed to celebrate contributions, track favors, or just have fun with a "social ledger" among friends. Built with a bold **Neo-Brutalist UI**, it's fast and real-time.
+
+![Neo-Brutalist Design](https://img.shields.io/badge/Design-Neo--Brutalist-black?style=for-the-badge)
+![Astro](https://img.shields.io/badge/Astro-6.3.3-BC52EE?style=for-the-badge&logo=astro)
+![Turso](https://img.shields.io/badge/Turso-LibSQL-00A3FF?style=for-the-badge&logo=turso)
+
+## ✨ Features
+
+- 🏗️ **Neo-Brutalist UI**: High-contrast, bold design that stands out.
+- 🔔 **Push Notifications**: Get notified when you receive points or when new members join.
+- 📊 **Ledger System**: Track every point event with reasons and timestamps.
+- 📱 **Mobile First**: Fully responsive and optimized for mobile interactions.
+- ⚡ **Blazing Fast**: Powered by Astro and LibSQL for near-instant responses.
+
+## 🚀 Quick Start
 
 ```sh
-npm create astro@latest -- --template minimal
+# Clone and install
+git clone https://github.com/jorbush/colegapoints.git
+cd colegapoints
+npm install
+
+# Setup environment
+cp .env.example .env
+# Fill in your Turso and VAPID keys!
+
+# Push schema and start
+npm run db:push
+npm run dev
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## 📚 Documentation
 
-## 🚀 Project Structure
+For more detailed information, check out our documentation:
 
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
-
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
-
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
+- 🏗️ [**Architecture**](docs/architecture.md) - Deep dive into the tech stack and project structure.
+- 🔌 [**API Reference**](docs/api.md) - Complete documentation of the available endpoints.
+- 🛠️ [**Development & Setup**](docs/development.md) - How to set up, test, and deploy the project.
 
 ## 🧞 Commands
 
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+| Command | Action |
+| :--- | :--- |
+| `npm run dev` | Starts local dev server at `localhost:4321` |
+| `npm run build` | Build your production site to `./dist/` |
+| `npm run test` | Run the Vitest test suite |
+| `npm run format` | Run Prettier to format the codebase |
+| `npm run db:push` | Push schema changes to the database |
+| `npm run db:studio` | Open Drizzle Studio to browse data |
