@@ -13,7 +13,7 @@ describe('PointsModal component', () => {
     const result = await container.renderToString(PointsModal, {
       props: {
         groupId: 'g1',
-        members
+        members,
       },
     });
 
@@ -30,7 +30,7 @@ describe('PointsModal component', () => {
     const result = await container.renderToString(PointsModal, {
       props: {
         groupId: 'g1',
-        members
+        members,
       },
     });
 

@@ -14,10 +14,13 @@ describe('api lib', () => {
     });
 
     const result = await createGroup('New Group', null);
-    expect(fetch).toHaveBeenCalledWith('/api/groups', expect.objectContaining({
-      method: 'POST',
-      body: JSON.stringify({ name: 'New Group', description: null }),
-    }));
+    expect(fetch).toHaveBeenCalledWith(
+      '/api/groups',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ name: 'New Group', description: null }),
+      })
+    );
     expect(result).toEqual(mockResponse);
   });
 
@@ -29,10 +32,13 @@ describe('api lib', () => {
     });
 
     const result = await joinGroup('g1', 'Jordi', '😎');
-    expect(fetch).toHaveBeenCalledWith('/api/groups/g1/join', expect.objectContaining({
-      method: 'POST',
-      body: JSON.stringify({ name: 'Jordi', emoji: '😎' }),
-    }));
+    expect(fetch).toHaveBeenCalledWith(
+      '/api/groups/g1/join',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ name: 'Jordi', emoji: '😎' }),
+      })
+    );
     expect(result).toEqual(mockMember);
   });
 
@@ -42,7 +48,8 @@ describe('api lib', () => {
       json: async () => ({ error: 'Too many points' }),
     });
 
-    await expect(sendPoints('g1', { fromMemberId: '1', toMemberId: '2', delta: 10 }))
-      .rejects.toThrow('Too many points');
+    await expect(
+      sendPoints('g1', { fromMemberId: '1', toMemberId: '2', delta: 10 })
+    ).rejects.toThrow('Too many points');
   });
 });

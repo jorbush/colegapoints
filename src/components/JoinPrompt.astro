@@ -10,19 +10,15 @@ const { groupId, groupName, groupDescription } = Astro.props;
 
 <div
   id="join-prompt"
-  class="card p-8 mb-8 hidden animate-pop-in bg-[var(--accent-light)]"
+  class="card animate-pop-in mb-8 hidden bg-[var(--accent-light)] p-8"
   data-group-id={groupId}
   data-group-name={groupName}
   data-group-description={groupDescription}
 >
-  <h2 class="text-3xl font-black mb-6 uppercase italic">
-    👋 Join the squad
-  </h2>
+  <h2 class="mb-6 text-3xl font-black uppercase italic">👋 Join the squad</h2>
   <div class="flex flex-col gap-5">
     <div>
-      <label class="text-sm font-black uppercase block mb-1"
-        >Your name</label
-      >
+      <label class="mb-1 block text-sm font-black uppercase">Your name</label>
       <input
         id="join-name"
         type="text"
@@ -32,36 +28,34 @@ const { groupId, groupName, groupDescription } = Astro.props;
       />
     </div>
     <div>
-      <label class="text-sm font-black uppercase block mb-3"
-        >Pick your emoji</label
-      >
+      <label class="mb-3 block text-sm font-black uppercase">Pick your emoji</label>
       <div id="emoji-picker" class="flex flex-wrap gap-2">
         {
           [
-            "😎",
-            "🤩",
-            "🦁",
-            "🐻",
-            "🦊",
-            "🐸",
-            "🐧",
-            "🐙",
-            "🦋",
-            "🌵",
-            "🍕",
-            "🎸",
-            "🚀",
-            "⚡",
-            "🔥",
-            "💎",
-            "🏆",
-            "🌊",
-            "🎭",
+            '😎',
+            '🤩',
+            '🦁',
+            '🐻',
+            '🦊',
+            '🐸',
+            '🐧',
+            '🐙',
+            '🦋',
+            '🌵',
+            '🍕',
+            '🎸',
+            '🚀',
+            '⚡',
+            '🔥',
+            '💎',
+            '🏆',
+            '🌊',
+            '🎭',
           ].map((e) => (
             <button
               type="button"
               data-emoji={e}
-              class="emoji-btn text-3xl p-2 border-2 border-[var(--border)] bg-white hover:translate-x-1 hover:-translate-y-1 transition-transform shadow-[2px_2px_0px_var(--border)] active:translate-x-0 active:translate-y-0 active:shadow-none"
+              class="emoji-btn border-2 border-[var(--border)] bg-white p-2 text-3xl shadow-[2px_2px_0px_var(--border)] transition-transform hover:translate-x-1 hover:-translate-y-1 active:translate-x-0 active:translate-y-0 active:shadow-none"
             >
               {e}
             </button>
@@ -69,67 +63,60 @@ const { groupId, groupName, groupDescription } = Astro.props;
         }
       </div>
     </div>
-    <button
-      id="join-btn"
-      class="btn btn-primary w-full py-4 text-xl uppercase italic mt-2"
-    >
+    <button id="join-btn" class="btn btn-primary mt-2 w-full py-4 text-xl uppercase italic">
       Join the squad →
     </button>
     <p
       id="join-error"
-      class="text-[var(--negative)] font-bold text-sm hidden p-2 border-2 border-[var(--negative)] bg-[var(--negative-bg)]"
+      class="hidden border-2 border-[var(--negative)] bg-[var(--negative-bg)] p-2 text-sm font-bold text-[var(--negative)]"
     >
     </p>
   </div>
 </div>
 
 <script>
-  import { storage } from "../lib/storage";
-  import { joinGroup } from "../lib/api";
+  import { storage } from '../lib/storage';
+  import { joinGroup } from '../lib/api';
 
-  const container = document.getElementById("join-prompt") as HTMLElement;
+  const container = document.getElementById('join-prompt') as HTMLElement;
   if (container) {
     const groupId = container.dataset.groupId!;
     const groupName = container.dataset.groupName!;
     const groupDescription = container.dataset.groupDescription!;
 
     // ── Emoji picker ────────────────────────────────────────────────────────────
-    let selectedEmoji = "😊";
-    const emojiBtns = container.querySelectorAll(".emoji-btn");
+    let selectedEmoji = '😊';
+    const emojiBtns = container.querySelectorAll('.emoji-btn');
     emojiBtns.forEach((btn) => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener('click', () => {
         emojiBtns.forEach((b) => {
           (b as HTMLElement).classList.remove(
-            "bg-[var(--accent)]",
-            "translate-x-1",
-            "-translate-y-1",
-            "shadow-none",
+            'bg-[var(--accent)]',
+            'translate-x-1',
+            '-translate-y-1',
+            'shadow-none'
           );
-          (b as HTMLElement).style.boxShadow = "2px 2px 0px var(--border)";
+          (b as HTMLElement).style.boxShadow = '2px 2px 0px var(--border)';
         });
-        btn.classList.add(
-          "bg-[var(--accent)]",
-          "translate-x-1",
-          "-translate-y-1",
-        );
-        (btn as HTMLElement).style.boxShadow = "none";
+        btn.classList.add('bg-[var(--accent)]', 'translate-x-1', '-translate-y-1');
+        (btn as HTMLElement).style.boxShadow = 'none';
         selectedEmoji = (btn as HTMLElement).dataset.emoji!;
       });
     });
 
     // ── Join ────────────────────────────────────────────────────────────────────
-    container.querySelector("#join-btn")?.addEventListener("click", async () => {
-      const nameInput = container.querySelector("#join-name") as HTMLInputElement;
+    container.querySelector('#join-btn')?.addEventListener('click', async () => {
+      const nameInput = container.querySelector('#join-name') as HTMLInputElement;
       const name = nameInput?.value.trim();
-      const errorEl = container.querySelector("#join-error") as HTMLElement;
+      const errorEl = container.querySelector('#join-error') as HTMLElement;
       if (!name) {
-        errorEl.textContent = "Enter your name!";
-        errorEl.classList.remove("hidden");
+        errorEl.textContent = 'Enter your name!';
+        errorEl.classList.remove('hidden');
         return;
       }
-      const btn = container.querySelector("#join-btn") as HTMLButtonElement;
+      const btn = container.querySelector('#join-btn') as HTMLButtonElement;
       btn.disabled = true;
-      btn.textContent = "Joining…";
+      btn.textContent = 'Joining…';
 
       try {
         const json = await joinGroup(groupId, name, selectedEmoji);
@@ -138,9 +125,9 @@ const { groupId, groupName, groupDescription } = Astro.props;
         window.location.reload();
       } catch (err: any) {
         errorEl.textContent = err.message;
-        errorEl.classList.remove("hidden");
+        errorEl.classList.remove('hidden');
         btn.disabled = false;
-        btn.textContent = "Join the squad →";
+        btn.textContent = 'Join the squad →';
       }
     });
   }

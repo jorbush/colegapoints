@@ -17,7 +17,7 @@ vi.mock('../../../../src/db', () => ({
 describe('DELETE /api/groups/[id]/leave', () => {
   it('allows a member to leave the group', async () => {
     (db.query.members.findFirst as any).mockResolvedValueOnce({ id: 'm1', groupId: 'g1' });
-    
+
     const request = new Request('http://localhost/api/groups/g1/leave', {
       method: 'DELETE',
       body: JSON.stringify({ memberId: 'm1' }),
@@ -30,7 +30,7 @@ describe('DELETE /api/groups/[id]/leave', () => {
 
   it('returns 404 if member is not in the group', async () => {
     (db.query.members.findFirst as any).mockResolvedValueOnce(null);
-    
+
     const request = new Request('http://localhost/api/groups/g1/leave', {
       method: 'DELETE',
       body: JSON.stringify({ memberId: 'm1' }),

@@ -39,10 +39,16 @@ export const POST: APIRoute = async ({ params, request }) => {
     ]);
 
     if (!fromMember || fromMember.groupId !== groupId) {
-      return new Response(JSON.stringify({ error: 'From-member not in group' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+      return new Response(JSON.stringify({ error: 'From-member not in group' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
     if (!toMember || toMember.groupId !== groupId) {
-      return new Response(JSON.stringify({ error: 'To-member not in group' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+      return new Response(JSON.stringify({ error: 'To-member not in group' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     const id = nanoid(12);

@@ -9,60 +9,45 @@ const { groupId, members } = Astro.props;
 
 <div
   id="points-modal"
-  class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-[rgba(0,0,0,0.8)]"
+  class="fixed inset-0 z-50 hidden items-center justify-center bg-[rgba(0,0,0,0.8)] p-4"
   data-group-id={groupId}
   data-members={JSON.stringify(members)}
 >
-  <div
-    class="card p-8 w-full max-w-sm animate-pop-in relative"
-    id="points-modal-inner"
-  >
-    <div class="flex items-center justify-between mb-8">
+  <div class="card animate-pop-in relative w-full max-w-sm p-8" id="points-modal-inner">
+    <div class="mb-8 flex items-center justify-between">
       <h3 class="text-3xl font-black uppercase italic">Points</h3>
-      <button
-        id="close-modal-btn"
-        class="btn btn-ghost w-10 h-10 text-2xl font-black">✕</button
-      >
+      <button id="close-modal-btn" class="btn btn-ghost h-10 w-10 text-2xl font-black">✕</button>
     </div>
 
     <div class="flex flex-col gap-6">
       <div>
-        <label class="text-sm font-black uppercase block mb-3"
-          >Who gets the points?</label
-        >
+        <label class="mb-3 block text-sm font-black uppercase">Who gets the points?</label>
         <div id="target-member-list" class="flex flex-wrap gap-2">
           <!-- populated by JS -->
         </div>
       </div>
 
       <div>
-        <label class="text-sm font-black uppercase block mb-3">Amount</label>
+        <label class="mb-3 block text-sm font-black uppercase">Amount</label>
         <div class="grid grid-cols-3 gap-2">
           {
             [-5, -3, -1, 1, 3, 5].map((v) => (
               <button
                 type="button"
                 data-delta={v}
-                class={`delta-btn btn py-3 text-xl font-black ${v > 0 ? "bg-[var(--positive-bg)] text-[var(--positive)]" : "bg-[var(--negative-bg)] text-[var(--negative)]"}`}
+                class={`delta-btn btn py-3 text-xl font-black ${v > 0 ? 'bg-[var(--positive-bg)] text-[var(--positive)]' : 'bg-[var(--negative-bg)] text-[var(--negative)]'}`}
               >
-                {v > 0 ? "+" : ""}
+                {v > 0 ? '+' : ''}
                 {v}
               </button>
             ))
           }
         </div>
-        <input
-          id="custom-delta"
-          type="number"
-          placeholder="Or custom amount…"
-          class="input mt-3"
-        />
+        <input id="custom-delta" type="number" placeholder="Or custom amount…" class="input mt-3" />
       </div>
 
       <div>
-        <label class="text-sm font-black uppercase block mb-1"
-          >Reason (optional)</label
-        >
+        <label class="mb-1 block text-sm font-black uppercase">Reason (optional)</label>
         <input
           id="point-reason"
           type="text"
@@ -74,13 +59,13 @@ const { groupId, members } = Astro.props;
 
       <button
         id="submit-points-btn"
-        class="btn btn-primary w-full py-4 text-xl uppercase italic mt-2"
+        class="btn btn-primary mt-2 w-full py-4 text-xl uppercase italic"
       >
         Send Points ⭐
       </button>
       <p
         id="points-error"
-        class="text-[var(--negative)] font-bold text-sm hidden p-2 border-2 border-[var(--negative)] bg-[var(--negative-bg)]"
+        class="hidden border-2 border-[var(--negative)] bg-[var(--negative-bg)] p-2 text-sm font-bold text-[var(--negative)]"
       >
       </p>
     </div>
@@ -88,45 +73,39 @@ const { groupId, members } = Astro.props;
 </div>
 
 <script>
-  import { storage } from "../lib/storage";
-  import { sendPoints } from "../lib/api";
+  import { storage } from '../lib/storage';
+  import { sendPoints } from '../lib/api';
 
-  const modal = document.getElementById("points-modal") as HTMLElement;
+  const modal = document.getElementById('points-modal') as HTMLElement;
   if (modal) {
     const groupId = modal.dataset.groupId!;
     const members = JSON.parse(modal.dataset.members!) as any[];
 
     const closeModal = () => {
-      modal.classList.add("hidden");
-      modal.classList.remove("flex");
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
     };
-    
+
     // ── Target selection ────────────────────────────────────────────────────────
     let selectedTargetId: string | null = null;
-    const targetList = modal.querySelector("#target-member-list");
+    const targetList = modal.querySelector('#target-member-list');
     const saved = storage.getMember(groupId);
     const savedId = saved?.id;
 
     members.forEach((m) => {
       if (m.id === savedId) return; // skip self
-      const btn = document.createElement("button");
-      btn.type = "button";
+      const btn = document.createElement('button');
+      btn.type = 'button';
       btn.dataset.memberId = m.id;
       btn.innerHTML = `<span class="text-2xl">${m.avatarEmoji}</span> <span class="text-sm font-black uppercase">${m.name}</span>`;
-      btn.className = "target-btn btn btn-ghost px-3 py-2 gap-2";
-      btn.addEventListener("click", () => {
-        modal.querySelectorAll(".target-btn").forEach((b) =>
-          b.classList.remove(
-            "bg-[var(--accent)]",
-            "-translate-y-1",
-            "translate-x-1",
-          ),
-        );
-        btn.classList.add(
-          "bg-[var(--accent)]",
-          "-translate-y-1",
-          "translate-x-1",
-        );
+      btn.className = 'target-btn btn btn-ghost px-3 py-2 gap-2';
+      btn.addEventListener('click', () => {
+        modal
+          .querySelectorAll('.target-btn')
+          .forEach((b) =>
+            b.classList.remove('bg-[var(--accent)]', '-translate-y-1', 'translate-x-1')
+          );
+        btn.classList.add('bg-[var(--accent)]', '-translate-y-1', 'translate-x-1');
         selectedTargetId = m.id;
       });
       targetList?.appendChild(btn);
@@ -134,48 +113,40 @@ const { groupId, members } = Astro.props;
 
     // ── Delta selection ──────────────────────────────────────────────────────────
     let selectedDelta: number | null = null;
-    modal.querySelectorAll(".delta-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        modal.querySelectorAll(".delta-btn").forEach((b) =>
-          b.classList.remove(
-            "bg-[var(--brand)]",
-            "text-white",
-            "-translate-y-1",
-            "translate-x-1",
-          ),
-        );
-        btn.classList.add(
-          "bg-[var(--brand)]",
-          "text-white",
-          "-translate-y-1",
-          "translate-x-1",
-        );
+    modal.querySelectorAll('.delta-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        modal
+          .querySelectorAll('.delta-btn')
+          .forEach((b) =>
+            b.classList.remove('bg-[var(--brand)]', 'text-white', '-translate-y-1', 'translate-x-1')
+          );
+        btn.classList.add('bg-[var(--brand)]', 'text-white', '-translate-y-1', 'translate-x-1');
         selectedDelta = parseInt((btn as HTMLElement).dataset.delta!);
-        (modal.querySelector("#custom-delta") as HTMLInputElement).value = "";
+        (modal.querySelector('#custom-delta') as HTMLInputElement).value = '';
       });
     });
 
     // ── Submit ───────────────────────────────────────────────────────────────────
-    modal.querySelector("#submit-points-btn")?.addEventListener("click", async () => {
-      const customVal = (modal.querySelector("#custom-delta") as HTMLInputElement)?.value;
+    modal.querySelector('#submit-points-btn')?.addEventListener('click', async () => {
+      const customVal = (modal.querySelector('#custom-delta') as HTMLInputElement)?.value;
       const delta = customVal ? parseInt(customVal) : selectedDelta;
-      const reason = (modal.querySelector("#point-reason") as HTMLInputElement)?.value;
-      const errorEl = modal.querySelector("#points-error") as HTMLElement;
+      const reason = (modal.querySelector('#point-reason') as HTMLInputElement)?.value;
+      const errorEl = modal.querySelector('#points-error') as HTMLElement;
 
       if (!selectedTargetId) {
-        errorEl.textContent = "Select a member!";
-        errorEl.classList.remove("hidden");
+        errorEl.textContent = 'Select a member!';
+        errorEl.classList.remove('hidden');
         return;
       }
       if (!delta || delta === 0) {
-        errorEl.textContent = "Pick or enter points!";
-        errorEl.classList.remove("hidden");
+        errorEl.textContent = 'Pick or enter points!';
+        errorEl.classList.remove('hidden');
         return;
       }
 
-      const btn = modal.querySelector("#submit-points-btn") as HTMLButtonElement;
+      const btn = modal.querySelector('#submit-points-btn') as HTMLButtonElement;
       btn.disabled = true;
-      btn.textContent = "Sending…";
+      btn.textContent = 'Sending…';
 
       try {
         await sendPoints(groupId, {
@@ -188,9 +159,9 @@ const { groupId, members } = Astro.props;
         window.location.reload();
       } catch (err: any) {
         errorEl.textContent = err.message;
-        errorEl.classList.remove("hidden");
+        errorEl.classList.remove('hidden');
         btn.disabled = false;
-        btn.textContent = "Send Points ⭐";
+        btn.textContent = 'Send Points ⭐';
       }
     });
   }

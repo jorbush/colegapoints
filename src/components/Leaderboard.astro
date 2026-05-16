@@ -14,60 +14,54 @@ interface Props {
 const { members, pointTotals } = Astro.props;
 
 // Sort members by points descending for leaderboard
-const sorted = [...members].sort(
-  (a, b) => (pointTotals[b.id] ?? 0) - (pointTotals[a.id] ?? 0),
-);
+const sorted = [...members].sort((a, b) => (pointTotals[b.id] ?? 0) - (pointTotals[a.id] ?? 0));
 ---
 
 <section class="mb-12">
   <h2
-    class="text-sm font-black uppercase tracking-widest mb-6 bg-[var(--accent)] inline-block px-2 border-2 border-[var(--border)]"
+    class="mb-6 inline-block border-2 border-[var(--border)] bg-[var(--accent)] px-2 text-sm font-black tracking-widest uppercase"
   >
     Leaderboard
   </h2>
   {
     sorted.length === 0 ? (
       <div class="card p-12 text-center">
-        <div class="text-6xl mb-4">🏜️</div>
+        <div class="mb-4 text-6xl">🏜️</div>
         <p class="text-2xl font-black uppercase italic">No colegas yet.</p>
-        <p class="text-lg font-bold mt-2">
-          Share the link to get the party started!
-        </p>
+        <p class="mt-2 text-lg font-bold">Share the link to get the party started!</p>
       </div>
     ) : (
-      <ul class="flex flex-col gap-4 stagger">
+      <ul class="stagger flex flex-col gap-4">
         {sorted.map((m, i) => {
           const pts = pointTotals[m.id] ?? 0;
           const isTop = i === 0 && pts > 0;
-          const medalEmojis = ["🥇", "🥈", "🥉"];
+          const medalEmojis = ['🥇', '🥈', '🥉'];
           const medal = medalEmojis[i] ?? null;
           return (
             <li
               id={`member-${m.id}`}
-              class={`card p-5 flex items-center gap-5 animate-slide-up ${isTop ? "bg-[var(--accent-light)]" : ""}`}
+              class={`card animate-slide-up flex items-center gap-5 p-5 ${isTop ? 'bg-[var(--accent-light)]' : ''}`}
               data-member-id={m.id}
             >
-              <div class="text-4xl w-16 h-16 flex items-center justify-center border-4 border-[var(--border)] bg-white shadow-[3px_3px_0px_var(--border)] flex-shrink-0">
+              <div class="flex h-16 w-16 flex-shrink-0 items-center justify-center border-4 border-[var(--border)] bg-white text-4xl shadow-[3px_3px_0px_var(--border)]">
                 {m.avatarEmoji}
               </div>
-              <div class="flex-1 min-w-0">
+              <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-2">
-                  <span class="text-2xl font-black uppercase tracking-tight truncate">
+                  <span class="truncate text-2xl font-black tracking-tight uppercase">
                     {m.name}
                   </span>
                   {medal && <span class="text-xl">{medal}</span>}
-                  {isTop && (
-                    <span class="tag tag-brand ml-2">Top Colega</span>
-                  )}
+                  {isTop && <span class="tag tag-brand ml-2">Top Colega</span>}
                 </div>
-                <div class="text-sm font-bold italic mt-1">
+                <div class="mt-1 text-sm font-bold italic">
                   Joined {new Date(m.joinedAt).toLocaleDateString()}
                 </div>
               </div>
               <div
-                class={`text-4xl font-black tabular-nums border-4 border-[var(--border)] px-4 py-2 shadow-[3px_3px_0px_var(--border)] ${pts > 0 ? "bg-[var(--positive-bg)] text-[var(--positive)]" : pts < 0 ? "bg-[var(--negative-bg)] text-[var(--negative)]" : "bg-white text-[var(--muted)]"}`}
+                class={`border-4 border-[var(--border)] px-4 py-2 text-4xl font-black tabular-nums shadow-[3px_3px_0px_var(--border)] ${pts > 0 ? 'bg-[var(--positive-bg)] text-[var(--positive)]' : pts < 0 ? 'bg-[var(--negative-bg)] text-[var(--negative)]' : 'bg-white text-[var(--muted)]'}`}
               >
-                {pts > 0 ? "+" : ""}
+                {pts > 0 ? '+' : ''}
                 {pts}
               </div>
             </li>

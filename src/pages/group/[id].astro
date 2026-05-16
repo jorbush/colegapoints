@@ -1,19 +1,19 @@
 ---
-import Base from "../../layouts/Base.astro";
-import { db } from "../../db";
-import { groups, members, pointEvents } from "../../db/schema";
-import { eq } from "drizzle-orm";
-import { calculatePointTotals } from "../../lib/points";
-import Leaderboard from "../../components/Leaderboard.astro";
-import RecentActivity from "../../components/RecentActivity.astro";
-import JoinPrompt from "../../components/JoinPrompt.astro";
-import PointsModal from "../../components/PointsModal.astro";
+import Base from '../../layouts/Base.astro';
+import { db } from '../../db';
+import { groups, members, pointEvents } from '../../db/schema';
+import { eq } from 'drizzle-orm';
+import { calculatePointTotals } from '../../lib/points';
+import Leaderboard from '../../components/Leaderboard.astro';
+import RecentActivity from '../../components/RecentActivity.astro';
+import JoinPrompt from '../../components/JoinPrompt.astro';
+import PointsModal from '../../components/PointsModal.astro';
 
 const { id } = Astro.params;
-if (!id) return Astro.redirect("/");
+if (!id) return Astro.redirect('/');
 
 const group = await db.query.groups.findFirst({ where: eq(groups.id, id) });
-if (!group) return Astro.redirect("/");
+if (!group) return Astro.redirect('/');
 
 const groupMembers = await db.query.members.findMany({
   where: eq(members.groupId, id),
@@ -31,69 +31,61 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
 ---
 
 <Base title={group.name} description={`Manage friend points for ${group.name}`}>
-  <div 
+  <div
     id="group-page-container"
-    class="max-w-2xl mx-auto px-4 py-10"
+    class="mx-auto max-w-2xl px-4 py-10"
     data-group-id={id}
     data-group-name={group.name}
-    data-group-description={group.description ?? ""}
+    data-group-description={group.description ?? ''}
     data-group-members={JSON.stringify(groupMembers)}
-    data-vapid-public-key={import.meta.env.VAPID_PUBLIC_KEY ?? ""}
+    data-vapid-public-key={import.meta.env.VAPID_PUBLIC_KEY ?? ''}
   >
     <!-- Header -->
-    <header class="mb-10 animate-slide-up">
-      <div class="flex items-center justify-between gap-4 mb-6">
+    <header class="animate-slide-up mb-10">
+      <div class="mb-6 flex items-center justify-between gap-4">
         <a
           href="/"
-          class="text-sm font-black uppercase tracking-widest hover:text-[var(--brand)] transition-colors inline-flex items-center gap-1 bg-[var(--accent)] border-2 border-[var(--border)] px-2 py-0.5 shrink-0"
+          class="inline-flex shrink-0 items-center gap-1 border-2 border-[var(--border)] bg-[var(--accent)] px-2 py-0.5 text-sm font-black tracking-widest uppercase transition-colors hover:text-[var(--brand)]"
         >
           ← Home
         </a>
-        <div class="flex flex-wrap gap-1.5 sm:gap-3 justify-end shrink-0">
+        <div class="flex shrink-0 flex-wrap justify-end gap-1.5 sm:gap-3">
           <button
             id="copy-invite-btn"
-            class="btn btn-ghost px-2 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-sm uppercase italic"
+            class="btn btn-ghost px-2 py-1.5 text-[10px] uppercase italic sm:px-4 sm:py-2 sm:text-sm"
           >
             🔗 Invite
           </button>
           <a
             href={`/group/${id}/history`}
-            class="btn btn-ghost px-2 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-sm uppercase italic"
+            class="btn btn-ghost px-2 py-1.5 text-[10px] uppercase italic sm:px-4 sm:py-2 sm:text-sm"
           >
             📜 History
           </a>
           <button
             id="leave-group-btn"
-            class="hidden btn btn-outline px-2 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-sm uppercase italic text-[var(--negative)] border-[var(--negative)] hover:bg-[var(--negative-bg)]"
+            class="btn btn-outline hidden border-[var(--negative)] px-2 py-1.5 text-[10px] text-[var(--negative)] uppercase italic hover:bg-[var(--negative-bg)] sm:px-4 sm:py-2 sm:text-sm"
           >
             🚪 Leave
           </button>
         </div>
       </div>
-      <h1
-        class="text-5xl font-black uppercase tracking-tighter leading-none mt-2"
-      >
+      <h1 class="mt-2 text-5xl leading-none font-black tracking-tighter uppercase">
         {group.name}
       </h1>
       {
         group.description && (
-          <p class="text-lg font-bold italic mt-2 text-[var(--muted)]">
-            {group.description}
-          </p>
+          <p class="mt-2 text-lg font-bold text-[var(--muted)] italic">{group.description}</p>
         )
       }
     </header>
 
-    <JoinPrompt 
-      groupId={id} 
-      groupName={group.name} 
-      groupDescription={group.description ?? ""} 
-    />
+    <JoinPrompt groupId={id} groupName={group.name} groupDescription={group.description ?? ''} />
 
     <Leaderboard members={groupMembers} pointTotals={pointTotals} />
 
     <!-- Add Points CTA (only shown if member) -->
-    <div id="add-points-section" class="hidden animate-slide-up mb-12">
+    <div id="add-points-section" class="animate-slide-up mb-12 hidden">
       <button
         id="add-points-btn"
         class="btn btn-primary w-full py-6 text-3xl uppercase italic shadow-lg"
@@ -102,11 +94,11 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
       </button>
     </div>
 
-    <RecentActivity 
-      events={recentEvents} 
-      memberMap={memberMap} 
-      groupId={id} 
-      totalEventsCount={allEvents.length} 
+    <RecentActivity
+      events={recentEvents}
+      memberMap={memberMap}
+      groupId={id}
+      totalEventsCount={allEvents.length}
     />
 
     <PointsModal groupId={id} members={groupMembers} />
@@ -114,24 +106,20 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
     <!-- Push toggle (shown if member) -->
     <div
       id="push-toggle-section"
-      class="hidden mt-8 card p-5 flex items-center justify-between animate-fade-in bg-[var(--surface-alt)]"
+      class="card animate-fade-in mt-8 flex hidden items-center justify-between bg-[var(--surface-alt)] p-5"
     >
       <div>
-        <p class="font-black uppercase text-lg leading-none">
-          Push Notifications
-        </p>
-        <p class="text-sm font-bold italic text-[var(--muted)] mt-1">
-          Get notified on updates
-        </p>
+        <p class="text-lg leading-none font-black uppercase">Push Notifications</p>
+        <p class="mt-1 text-sm font-bold text-[var(--muted)] italic">Get notified on updates</p>
       </div>
       <button
         id="push-toggle-btn"
-        class="relative w-14 h-8 border-4 border-[var(--border)] transition-colors duration-200 bg-white focus:outline-none shadow-[2px_2px_0px_var(--border)]"
+        class="relative h-8 w-14 border-4 border-[var(--border)] bg-white shadow-[2px_2px_0px_var(--border)] transition-colors duration-200 focus:outline-none"
         role="switch"
         aria-checked="false"
       >
         <span
-          class="absolute top-0.5 left-0.5 w-5 h-5 border-2 border-[var(--border)] bg-[var(--border)] shadow-sm transition-transform duration-200 push-thumb"
+          class="push-thumb absolute top-0.5 left-0.5 h-5 w-5 border-2 border-[var(--border)] bg-[var(--border)] shadow-sm transition-transform duration-200"
         ></span>
       </button>
     </div>
@@ -139,36 +127,31 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
     <!-- Leave Group Confirmation Modal -->
     <div
       id="leave-modal"
-      class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-[rgba(0,0,0,0.8)]"
+      class="fixed inset-0 z-50 hidden items-center justify-center bg-[rgba(0,0,0,0.8)] p-4"
     >
-      <div class="card p-8 w-full max-w-sm animate-pop-in">
-        <div class="text-5xl text-center mb-6">🚪</div>
-        <h3 class="text-3xl font-black text-center uppercase italic mb-3">
-          Leave group?
-        </h3>
-        <p class="text-base font-bold text-center mb-8 italic leading-tight">
+      <div class="card animate-pop-in w-full max-w-sm p-8">
+        <div class="mb-6 text-center text-5xl">🚪</div>
+        <h3 class="mb-3 text-center text-3xl font-black uppercase italic">Leave group?</h3>
+        <p class="mb-8 text-center text-base leading-tight font-bold italic">
           You'll be removed from <span
             id="leave-group-name"
-            class="bg-[var(--accent)] px-1 underline"></span>. Your history
-          stays, but the squad will miss you.
+            class="bg-[var(--accent)] px-1 underline"></span>. Your history stays, but the squad
+          will miss you.
         </p>
         <div class="flex gap-4">
-          <button
-            id="leave-cancel-btn"
-            class="flex-1 btn btn-ghost py-4 uppercase font-black"
-          >
+          <button id="leave-cancel-btn" class="btn btn-ghost flex-1 py-4 font-black uppercase">
             Cancel
           </button>
           <button
             id="leave-confirm-btn"
-            class="flex-1 btn btn-danger py-4 uppercase font-black italic shadow-lg"
+            class="btn btn-danger flex-1 py-4 font-black uppercase italic shadow-lg"
           >
             Leave
           </button>
         </div>
         <p
           id="leave-error"
-          class="text-[var(--negative)] font-bold text-sm text-center mt-4 hidden p-2 border-2 border-[var(--negative)] bg-[var(--negative-bg)]"
+          class="mt-4 hidden border-2 border-[var(--negative)] bg-[var(--negative-bg)] p-2 text-center text-sm font-bold text-[var(--negative)]"
         >
         </p>
       </div>
@@ -177,10 +160,10 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
 </Base>
 
 <script>
-  import { storage } from "../../lib/storage";
-  import { leaveGroup, subscribePush } from "../../lib/api";
+  import { storage } from '../../lib/storage';
+  import { leaveGroup, subscribePush } from '../../lib/api';
 
-  const container = document.getElementById("group-page-container") as HTMLElement;
+  const container = document.getElementById('group-page-container') as HTMLElement;
   const groupId = container.dataset.groupId!;
   const groupName = container.dataset.groupName!;
   const vapidPublicKey = container.dataset.vapidPublicKey!;
@@ -189,86 +172,73 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
   const saved = storage.getMember(groupId);
 
   if (!saved) {
-    document.getElementById("join-prompt")?.classList.remove("hidden");
+    document.getElementById('join-prompt')?.classList.remove('hidden');
   } else {
-    document.getElementById("add-points-section")?.classList.remove("hidden");
-    document.getElementById("push-toggle-section")?.classList.remove("hidden");
-    document.getElementById("leave-group-btn")?.classList.remove("hidden");
+    document.getElementById('add-points-section')?.classList.remove('hidden');
+    document.getElementById('push-toggle-section')?.classList.remove('hidden');
+    document.getElementById('leave-group-btn')?.classList.remove('hidden');
     initPushToggle(saved);
   }
 
   // ── Copy invite ─────────────────────────────────────────────────────────────
-  document
-    .getElementById("copy-invite-btn")
-    ?.addEventListener("click", async () => {
-      const btn = document.getElementById("copy-invite-btn")!;
-      await navigator.clipboard.writeText(window.location.href);
-      btn.textContent = "✅ Copied!";
-      setTimeout(() => {
-        btn.textContent = "🔗 Invite";
-      }, 2000);
-    });
+  document.getElementById('copy-invite-btn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('copy-invite-btn')!;
+    await navigator.clipboard.writeText(window.location.href);
+    btn.textContent = '✅ Copied!';
+    setTimeout(() => {
+      btn.textContent = '🔗 Invite';
+    }, 2000);
+  });
 
   // ── Points modal ─────────────────────────────────────────────────────────────
-  const modal = document.getElementById("points-modal");
+  const modal = document.getElementById('points-modal');
   const closeModal = () => {
-    modal?.classList.add("hidden");
-    modal?.classList.remove("flex");
+    modal?.classList.add('hidden');
+    modal?.classList.remove('flex');
   };
   const openModal = () => {
-    modal?.classList.remove("hidden");
-    modal?.classList.add("flex");
+    modal?.classList.remove('hidden');
+    modal?.classList.add('flex');
   };
 
-  document
-    .getElementById("add-points-btn")
-    ?.addEventListener("click", openModal);
-  document
-    .getElementById("close-modal-btn")
-    ?.addEventListener("click", closeModal);
-  modal?.addEventListener("click", (e) => {
+  document.getElementById('add-points-btn')?.addEventListener('click', openModal);
+  document.getElementById('close-modal-btn')?.addEventListener('click', closeModal);
+  modal?.addEventListener('click', (e) => {
     if (e.target === modal) closeModal();
   });
 
   // ── Push notifications ───────────────────────────────────────────────────────
   function urlBase64ToUint8Array(base64String: string) {
-    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-    const base64 = (base64String + padding)
-      .replace(/-/g, "+")
-      .replace(/_/g, "/");
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
     const raw = atob(base64);
     return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)));
   }
 
   async function initPushToggle(member: any) {
-    if (
-      !("serviceWorker" in navigator) ||
-      !("PushManager" in window) ||
-      !vapidPublicKey
-    )
-      return;
-    const toggleBtn = document.getElementById("push-toggle-btn") as HTMLButtonElement;
-    const thumb = toggleBtn?.querySelector(".push-thumb");
+    if (!('serviceWorker' in navigator) || !('PushManager' in window) || !vapidPublicKey) return;
+    const toggleBtn = document.getElementById('push-toggle-btn') as HTMLButtonElement;
+    const thumb = toggleBtn?.querySelector('.push-thumb');
 
     // Check current state
-    const reg = await navigator.serviceWorker.register("/sw.js");
+    const reg = await navigator.serviceWorker.register('/sw.js');
     const existingSub = await reg.pushManager.getSubscription();
 
     const setActive = (active: boolean) => {
-      toggleBtn?.setAttribute("aria-checked", active ? "true" : "false");
+      toggleBtn?.setAttribute('aria-checked', active ? 'true' : 'false');
       if (active) {
-        toggleBtn?.style.setProperty("background-color", "var(--accent)");
-        thumb?.classList.add("translate-x-6");
+        toggleBtn?.style.setProperty('background-color', 'var(--accent)');
+        thumb?.classList.add('translate-x-6');
       } else {
-        toggleBtn?.style.removeProperty("background-color");
-        thumb?.classList.remove("translate-x-6");
+        toggleBtn?.style.removeProperty('background-color');
+        thumb?.classList.remove('translate-x-6');
       }
     };
 
     setActive(!!existingSub);
 
-    toggleBtn?.addEventListener("click", async () => {
-      const isOn = toggleBtn.getAttribute("aria-checked") === "true";
+    toggleBtn?.addEventListener('click', async () => {
+      const isOn = toggleBtn.getAttribute('aria-checked') === 'true';
       if (isOn) {
         const sub = await reg.pushManager.getSubscription();
         await sub?.unsubscribe();
@@ -282,58 +252,54 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
           await subscribePush(groupId, member.id, sub.toJSON());
           setActive(true);
         } catch (e) {
-          console.error("Push subscribe failed:", e);
+          console.error('Push subscribe failed:', e);
         }
       }
     });
   }
 
   // ── Leave group ────────────────────────────────────────────────────────────────
-  const leaveModal = document.getElementById("leave-modal");
-  const leaveNameEl = document.getElementById("leave-group-name");
-  const leaveErrorEl = document.getElementById("leave-error");
-  const leaveConfirm = document.getElementById("leave-confirm-btn") as HTMLButtonElement;
+  const leaveModal = document.getElementById('leave-modal');
+  const leaveNameEl = document.getElementById('leave-group-name');
+  const leaveErrorEl = document.getElementById('leave-error');
+  const leaveConfirm = document.getElementById('leave-confirm-btn') as HTMLButtonElement;
 
   if (leaveNameEl) leaveNameEl.textContent = groupName;
 
   function openLeaveModal() {
-    leaveModal?.classList.remove("hidden");
-    leaveModal?.classList.add("flex");
+    leaveModal?.classList.remove('hidden');
+    leaveModal?.classList.add('flex');
   }
   function closeLeaveModal() {
-    leaveModal?.classList.remove("flex");
-    leaveModal?.classList.add("hidden");
-    leaveErrorEl?.classList.add("hidden");
+    leaveModal?.classList.remove('flex');
+    leaveModal?.classList.add('hidden');
+    leaveErrorEl?.classList.add('hidden');
   }
 
-  document
-    .getElementById("leave-group-btn")
-    ?.addEventListener("click", openLeaveModal);
-  document
-    .getElementById("leave-cancel-btn")
-    ?.addEventListener("click", closeLeaveModal);
-  leaveModal?.addEventListener("click", (e) => {
+  document.getElementById('leave-group-btn')?.addEventListener('click', openLeaveModal);
+  document.getElementById('leave-cancel-btn')?.addEventListener('click', closeLeaveModal);
+  leaveModal?.addEventListener('click', (e) => {
     if (e.target === leaveModal) closeLeaveModal();
   });
 
-  leaveConfirm?.addEventListener("click", async () => {
+  leaveConfirm?.addEventListener('click', async () => {
     if (!saved) return;
     leaveConfirm.disabled = true;
-    leaveConfirm.textContent = "Leaving…";
-    leaveErrorEl?.classList.add("hidden");
+    leaveConfirm.textContent = 'Leaving…';
+    leaveErrorEl?.classList.add('hidden');
 
     try {
       await leaveGroup(groupId, saved.id);
       storage.removeMember(groupId);
       storage.removeGroupFromList(groupId);
-      window.location.href = "/";
+      window.location.href = '/';
     } catch (err: any) {
       if (leaveErrorEl) {
         leaveErrorEl.textContent = err.message;
-        leaveErrorEl.classList.remove("hidden");
+        leaveErrorEl.classList.remove('hidden');
       }
       leaveConfirm.disabled = false;
-      leaveConfirm.textContent = "Leave";
+      leaveConfirm.textContent = 'Leave';
     }
   });
 </script>

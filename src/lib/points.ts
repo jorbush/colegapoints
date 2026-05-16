@@ -13,19 +13,22 @@ export interface PointEvent {
 /**
  * Calculates point totals for each member based on point events.
  */
-export function calculatePointTotals(members: Member[], events: PointEvent[]): Record<string, number> {
+export function calculatePointTotals(
+  members: Member[],
+  events: PointEvent[]
+): Record<string, number> {
   const totals: Record<string, number> = {};
-  
+
   for (const member of members) {
     totals[member.id] = 0;
   }
-  
+
   for (const event of events) {
     if (event.toMemberId in totals) {
       totals[event.toMemberId] += event.delta;
     }
   }
-  
+
   return totals;
 }
 

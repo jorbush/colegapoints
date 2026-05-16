@@ -8,19 +8,24 @@ export interface SavedGroup {
   joinedAt: number;
 }
 
-const GROUPS_KEY = "cp_groups";
-const MEMBER_KEY_PREFIX = "cp_member_";
+const GROUPS_KEY = 'cp_groups';
+const MEMBER_KEY_PREFIX = 'cp_member_';
 
 export const storage = {
   getGroups(): SavedGroup[] {
     try {
-      return JSON.parse(localStorage.getItem(GROUPS_KEY) ?? "[]");
+      return JSON.parse(localStorage.getItem(GROUPS_KEY) ?? '[]');
     } catch {
       return [];
     }
   },
 
-  saveGroupToList(groupId: string, groupName: string, groupDescription: string, member: { id: string, name: string, avatarEmoji: string }) {
+  saveGroupToList(
+    groupId: string,
+    groupName: string,
+    groupDescription: string,
+    member: { id: string; name: string; avatarEmoji: string }
+  ) {
     try {
       const existing = this.getGroups();
       const filtered = existing.filter((g) => g.groupId !== groupId);
@@ -35,7 +40,7 @@ export const storage = {
       });
       localStorage.setItem(GROUPS_KEY, JSON.stringify(filtered));
     } catch (e) {
-      console.error("Failed to save group to list", e);
+      console.error('Failed to save group to list', e);
     }
   },
 
@@ -44,13 +49,13 @@ export const storage = {
       const groups = this.getGroups();
       localStorage.setItem(GROUPS_KEY, JSON.stringify(groups.filter((g) => g.groupId !== groupId)));
     } catch (e) {
-       console.error("Failed to remove group from list", e);
+      console.error('Failed to remove group from list', e);
     }
   },
 
   getMember(groupId: string) {
     try {
-      return JSON.parse(localStorage.getItem(`${MEMBER_KEY_PREFIX}${groupId}`) ?? "null");
+      return JSON.parse(localStorage.getItem(`${MEMBER_KEY_PREFIX}${groupId}`) ?? 'null');
     } catch {
       return null;
     }
@@ -62,5 +67,5 @@ export const storage = {
 
   removeMember(groupId: string) {
     localStorage.removeItem(`${MEMBER_KEY_PREFIX}${groupId}`);
-  }
+  },
 };

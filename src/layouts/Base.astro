@@ -4,7 +4,7 @@ interface Props {
   description?: string;
 }
 const {
-  title = "ColegaPoints",
+  title = 'ColegaPoints',
   description = "Track friend points with your crew. Give points, take points, see who's the best colega.",
 } = Astro.props;
 ---
@@ -16,7 +16,7 @@ const {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
     <meta name="theme-color" content="#6d28d9" />
-    <title>{title === "ColegaPoints" ? title : `${title} — ColegaPoints`}</title>
+    <title>{title === 'ColegaPoints' ? title : `${title} — ColegaPoints`}</title>
 
     <!-- SEO & Social Meta Tags -->
     <link rel="canonical" href={Astro.url} />
@@ -54,5 +54,5 @@ const {
 </html>
 
 <style is:global>
-  @import "../styles/global.css";
+  @import '../styles/global.css';
 </style>

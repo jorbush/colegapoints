@@ -9,4 +9,3 @@ export default {
     authToken: process.env.TURSO_AUTH_TOKEN,
   },
 } satisfies Config;
-

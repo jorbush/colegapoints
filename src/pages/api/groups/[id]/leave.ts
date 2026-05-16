@@ -28,9 +28,7 @@ export const DELETE: APIRoute = async ({ params, request }) => {
       });
     }
 
-    await db
-      .delete(members)
-      .where(and(eq(members.id, memberId), eq(members.groupId, groupId)));
+    await db.delete(members).where(and(eq(members.id, memberId), eq(members.groupId, groupId)));
 
     return new Response(JSON.stringify({ ok: true }), {
       headers: { 'Content-Type': 'application/json' },

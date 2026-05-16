@@ -21,7 +21,7 @@ vi.mock('../../../../src/lib/push', () => ({
 describe('POST /api/groups/[id]/join', () => {
   it('joins a group successfully', async () => {
     (db.query.groups.findFirst as any).mockResolvedValueOnce({ id: 'g1', name: 'Squad' });
-    
+
     const request = new Request('http://localhost/api/groups/g1/join', {
       method: 'POST',
       body: JSON.stringify({ name: 'Jordi', emoji: '😎' }),
@@ -29,7 +29,7 @@ describe('POST /api/groups/[id]/join', () => {
 
     const response = await POST({ params: { id: 'g1' }, request } as any);
     expect(response.status).toBe(201);
-    
+
     const data = await response.json();
     expect(data.name).toBe('Jordi');
     expect(db.insert).toHaveBeenCalled();
@@ -37,7 +37,7 @@ describe('POST /api/groups/[id]/join', () => {
 
   it('returns 404 if group does not exist', async () => {
     (db.query.groups.findFirst as any).mockResolvedValueOnce(null);
-    
+
     const request = new Request('http://localhost/api/groups/g1/join', {
       method: 'POST',
       body: JSON.stringify({ name: 'Jordi' }),

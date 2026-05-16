@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { calculatePointTotals, sortMembersByPoints, type Member, type PointEvent } from '../../src/lib/points';
+import {
+  calculatePointTotals,
+  sortMembersByPoints,
+  type Member,
+  type PointEvent,
+} from '../../src/lib/points';
 
 describe('points logic', () => {
   const members: Member[] = [

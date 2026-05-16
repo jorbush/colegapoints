@@ -3,9 +3,7 @@ import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import RecentActivity from '../../src/components/RecentActivity.astro';
 
 describe('RecentActivity component', () => {
-  const events = [
-    { fromMemberId: '1', toMemberId: '2', delta: 5, createdAt: new Date() },
-  ];
+  const events = [{ fromMemberId: '1', toMemberId: '2', delta: 5, createdAt: new Date() }];
   const memberMap = {
     '1': { id: '1', name: 'Alice', avatarEmoji: '😎' },
     '2': { id: '2', name: 'Bob', avatarEmoji: '🤓' },
@@ -18,7 +16,7 @@ describe('RecentActivity component', () => {
         events,
         memberMap,
         groupId: 'g1',
-        totalEventsCount: 1
+        totalEventsCount: 1,
       },
     });
 
@@ -34,7 +32,7 @@ describe('RecentActivity component', () => {
         events,
         memberMap,
         groupId: 'g1',
-        totalEventsCount: 10
+        totalEventsCount: 10,
       },
     });
 

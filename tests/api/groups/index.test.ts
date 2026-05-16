@@ -18,7 +18,7 @@ describe('POST /api/groups', () => {
 
     const response = await POST({ request } as any);
     expect(response.status).toBe(201);
-    
+
     const data = await response.json();
     expect(data.id).toBeDefined();
     expect(db.insert).toHaveBeenCalled();

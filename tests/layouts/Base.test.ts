@@ -10,7 +10,9 @@ describe('Base layout', () => {
     });
 
     expect(result).toContain('<title>ColegaPoints</title>');
-    expect(result).toContain('meta name="description" content="Track friend points with your crew. Give points, take points, see who\'s the best colega."');
+    expect(result).toContain(
+      'meta name="description" content="Track friend points with your crew. Give points, take points, see who\'s the best colega."'
+    );
   });
 
   it('renders custom title and description', async () => {
@@ -18,7 +20,7 @@ describe('Base layout', () => {
     const result = await container.renderToString(Base, {
       props: {
         title: 'Custom Page',
-        description: 'A very special page'
+        description: 'A very special page',
       },
     });
 
@@ -30,7 +32,7 @@ describe('Base layout', () => {
     const container = await AstroContainer.create();
     const result = await container.renderToString(Base, {
       slots: {
-        default: '<h1>Hello World</h1>'
+        default: '<h1>Hello World</h1>',
       },
     });
 

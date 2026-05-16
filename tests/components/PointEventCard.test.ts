@@ -11,7 +11,7 @@ describe('PointEventCard component', () => {
         to: { name: 'Bob', avatarEmoji: '🤓' },
         delta: 5,
         createdAt: new Date('2026-05-16T10:00:00Z'),
-        variant: 'full'
+        variant: 'full',
       },
     });
 
@@ -29,7 +29,7 @@ describe('PointEventCard component', () => {
         to: { name: 'Bob', avatarEmoji: '🤓' },
         delta: -3,
         createdAt: new Date('2026-05-16T10:00:00Z'),
-        variant: 'compact'
+        variant: 'compact',
       },
     });
 

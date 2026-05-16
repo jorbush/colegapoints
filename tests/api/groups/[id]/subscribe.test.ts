@@ -23,7 +23,7 @@ describe('POST /api/groups/[id]/subscribe', () => {
       method: 'POST',
       body: JSON.stringify({
         memberId: 'm1',
-        subscription: { endpoint: 'https://example.com' }
+        subscription: { endpoint: 'https://example.com' },
       }),
     });
 
@@ -31,7 +31,7 @@ describe('POST /api/groups/[id]/subscribe', () => {
     expect(response.status).toBe(200);
     expect(db.update).toHaveBeenCalled();
     expect((db as any).set).toHaveBeenCalledWith({
-      pushSubscription: JSON.stringify({ endpoint: 'https://example.com' })
+      pushSubscription: JSON.stringify({ endpoint: 'https://example.com' }),
     });
   });
 

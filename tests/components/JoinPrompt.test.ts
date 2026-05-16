@@ -9,7 +9,7 @@ describe('JoinPrompt component', () => {
       props: {
         groupId: 'g1',
         groupName: 'The Squad',
-        groupDescription: 'A cool group'
+        groupDescription: 'A cool group',
       },
     });
 
@@ -25,7 +25,7 @@ describe('JoinPrompt component', () => {
       props: {
         groupId: 'g1',
         groupName: 'The Squad',
-        groupDescription: 'A cool group'
+        groupDescription: 'A cool group',
       },
     });
 
