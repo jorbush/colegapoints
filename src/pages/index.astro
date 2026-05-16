@@ -111,17 +111,11 @@ import Base from "../layouts/Base.astro";
 </Base>
 
 <script>
-  // ── Your Groups ────────────────────────────────────────────────────────────
-  function loadGroups() {
-    try {
-      return JSON.parse(localStorage.getItem("cp_groups") ?? "[]");
-    } catch {
-      return [];
-    }
-  }
+  import { storage } from "../lib/storage";
+  import { createGroup } from "../lib/api";
 
   function renderGroups() {
-    const groups = loadGroups();
+    const groups = storage.getGroups();
     if (!groups.length) return;
 
     const section = document.getElementById("your-groups-section")!;
@@ -133,7 +127,7 @@ import Base from "../layouts/Base.astro";
     divider.classList.add("flex");
 
     list.innerHTML = "";
-    groups.forEach((g: any, i: number) => {
+    groups.forEach((g, i) => {
       const li = document.createElement("li");
       li.className = "animate-slide-up";
       li.style.animationDelay = `${i * 60}ms`;
@@ -174,7 +168,7 @@ import Base from "../layouts/Base.astro";
     "create-error",
   ) as HTMLParagraphElement;
 
-  form.addEventListener("submit", async (e) => {
+  form?.addEventListener("submit", async (e) => {
     e.preventDefault();
     btn.disabled = true;
     btn.textContent = "Creating…";
@@ -182,20 +176,10 @@ import Base from "../layouts/Base.astro";
 
     const data = new FormData(form);
     try {
-      const res = await fetch("/api/groups", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: data.get("name"),
-          description: data.get("description") || null,
-        }),
-      });
-      const json = await res.json();
-      if (res.ok) {
-        window.location.href = `/group/${json.id}`;
-      } else {
-        throw new Error(json.error ?? "Unknown error");
-      }
+      const name = data.get("name") as string;
+      const description = (data.get("description") as string) || null;
+      const json = await createGroup(name, description);
+      window.location.href = `/group/${json.id}`;
     } catch (err: any) {
       errorEl.textContent = err.message;
       errorEl.classList.remove("hidden");

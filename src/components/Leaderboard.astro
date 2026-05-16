@@ -1,0 +1,79 @@
+---
+interface Member {
+  id: string;
+  name: string;
+  avatarEmoji: string;
+  joinedAt: number | Date;
+}
+
+interface Props {
+  members: Member[];
+  pointTotals: Record<string, number>;
+}
+
+const { members, pointTotals } = Astro.props;
+
+// Sort members by points descending for leaderboard
+const sorted = [...members].sort(
+  (a, b) => (pointTotals[b.id] ?? 0) - (pointTotals[a.id] ?? 0),
+);
+---
+
+<section class="mb-12">
+  <h2
+    class="text-sm font-black uppercase tracking-widest mb-6 bg-[var(--accent)] inline-block px-2 border-2 border-[var(--border)]"
+  >
+    Leaderboard
+  </h2>
+  {
+    sorted.length === 0 ? (
+      <div class="card p-12 text-center">
+        <div class="text-6xl mb-4">🏜️</div>
+        <p class="text-2xl font-black uppercase italic">No colegas yet.</p>
+        <p class="text-lg font-bold mt-2">
+          Share the link to get the party started!
+        </p>
+      </div>
+    ) : (
+      <ul class="flex flex-col gap-4 stagger">
+        {sorted.map((m, i) => {
+          const pts = pointTotals[m.id] ?? 0;
+          const isTop = i === 0 && pts > 0;
+          const medalEmojis = ["🥇", "🥈", "🥉"];
+          const medal = medalEmojis[i] ?? null;
+          return (
+            <li
+              id={`member-${m.id}`}
+              class={`card p-5 flex items-center gap-5 animate-slide-up ${isTop ? "bg-[var(--accent-light)]" : ""}`}
+              data-member-id={m.id}
+            >
+              <div class="text-4xl w-16 h-16 flex items-center justify-center border-4 border-[var(--border)] bg-white shadow-[3px_3px_0px_var(--border)] flex-shrink-0">
+                {m.avatarEmoji}
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="text-2xl font-black uppercase tracking-tight truncate">
+                    {m.name}
+                  </span>
+                  {medal && <span class="text-xl">{medal}</span>}
+                  {isTop && (
+                    <span class="tag tag-brand ml-2">Top Colega</span>
+                  )}
+                </div>
+                <div class="text-sm font-bold italic mt-1">
+                  Joined {new Date(m.joinedAt).toLocaleDateString()}
+                </div>
+              </div>
+              <div
+                class={`text-4xl font-black tabular-nums border-4 border-[var(--border)] px-4 py-2 shadow-[3px_3px_0px_var(--border)] ${pts > 0 ? "bg-[var(--positive-bg)] text-[var(--positive)]" : pts < 0 ? "bg-[var(--negative-bg)] text-[var(--negative)]" : "bg-white text-[var(--muted)]"}`}
+              >
+                {pts > 0 ? "+" : ""}
+                {pts}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    )
+  }
+</section>

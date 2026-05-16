@@ -3,6 +3,7 @@ import Base from '../../../layouts/Base.astro';
 import { db } from '../../../db';
 import { groups, members, pointEvents } from '../../../db/schema';
 import { eq } from 'drizzle-orm';
+import PointEventCard from '../../../components/PointEventCard.astro';
 
 const { id } = Astro.params;
 if (!id) return Astro.redirect('/');
@@ -43,51 +44,16 @@ const events = await db.query.pointEvents.findMany({
         {events.map((ev) => {
           const from = memberMap[ev.fromMemberId];
           const to = memberMap[ev.toMemberId];
-          const positive = ev.delta > 0;
-          const date = new Date(ev.createdAt);
           if (!from || !to) return null;
           return (
-            <li class="card p-5 flex items-center gap-5 animate-slide-up">
-              <!-- Delta badge -->
-              <div
-                class={`w-16 h-16 border-4 border-[var(--border)] flex items-center justify-center text-2xl font-black flex-shrink-0 shadow-[3px_3px_0px_var(--border)] ${
-                  positive
-                    ? 'bg-[var(--positive-bg)] text-[var(--positive)]'
-                    : 'bg-[var(--negative-bg)] text-[var(--negative)]'
-                }`}
-              >
-                {positive ? '+' : ''}{ev.delta}
-              </div>
-              <!-- Info -->
-              <div class="flex-1 min-w-0">
-                <div class="text-base font-bold leading-tight">
-                  <span class="font-black uppercase tracking-tight text-lg">{from.name}</span>
-                  <span class="italic text-[var(--muted)]"> {positive ? 'gave' : 'took'} </span>
-                  <span class={`font-black ${positive ? 'text-[var(--positive)]' : 'text-[var(--negative)]'}`}>
-                    {Math.abs(ev.delta)} pt{Math.abs(ev.delta) !== 1 ? 's' : ''}
-                  </span>
-                  <span class="italic text-[var(--muted)]"> {positive ? 'to' : 'from'} </span>
-                  <span class="font-black uppercase tracking-tight text-lg">{to.name}</span>
-                </div>
-                {ev.reason && (
-                  <div class="mt-2 text-sm text-[var(--muted)] italic font-bold">"{ev.reason}"</div>
-                )}
-                <div class="mt-1 text-xs font-black uppercase text-[var(--muted)]">
-                  {date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
-                  {' · '}{date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
-                </div>
-              </div>
-              <!-- Avatars -->
-              <div class="flex flex-col items-center gap-1 flex-shrink-0">
-                 <div class="w-10 h-10 border-2 border-[var(--border)] bg-white flex items-center justify-center text-xl shadow-[2px_2px_0px_var(--border)]" title={from.name}>
-                  {from.avatarEmoji}
-                </div>
-                <span class="text-sm font-black">{positive ? '↓' : '↑'}</span>
-                 <div class="w-10 h-10 border-2 border-[var(--border)] bg-white flex items-center justify-center text-xl shadow-[2px_2px_0px_var(--border)]" title={to.name}>
-                  {to.avatarEmoji}
-                </div>
-              </div>
-            </li>
+            <PointEventCard 
+              from={from} 
+              to={to} 
+              delta={ev.delta} 
+              reason={ev.reason} 
+              createdAt={ev.createdAt} 
+              variant="full"
+            />
           );
         })}
       </ul>

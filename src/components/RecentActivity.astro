@@ -1,0 +1,61 @@
+---
+import PointEventCard from "./PointEventCard.astro";
+
+interface Event {
+  fromMemberId: string;
+  toMemberId: string;
+  delta: number;
+  reason?: string | null;
+  createdAt: number | Date;
+}
+
+interface Member {
+  id: string;
+  name: string;
+  avatarEmoji: string;
+}
+
+interface Props {
+  events: Event[];
+  memberMap: Record<string, Member>;
+  groupId: string;
+  totalEventsCount: number;
+}
+
+const { events, memberMap, groupId, totalEventsCount } = Astro.props;
+---
+
+{
+  events.length > 0 && (
+    <section class="animate-fade-in">
+      <h2 class="text-sm font-black uppercase tracking-widest mb-6 bg-[var(--accent)] inline-block px-2 border-2 border-[var(--border)]">
+        Recent Activity
+      </h2>
+      <ul class="flex flex-col gap-3">
+        {events.map((ev) => {
+          const from = memberMap[ev.fromMemberId];
+          const to = memberMap[ev.toMemberId];
+          if (!from || !to) return null;
+          return (
+            <PointEventCard
+              from={from}
+              to={to}
+              delta={ev.delta}
+              reason={ev.reason}
+              createdAt={ev.createdAt}
+              variant="compact"
+            />
+          );
+        })}
+      </ul>
+      {totalEventsCount > 5 && (
+        <a
+          href={`/group/${groupId}/history`}
+          class="btn btn-outline w-full mt-4 py-3 text-sm uppercase italic"
+        >
+          See full history →
+        </a>
+      )}
+    </section>
+  )
+}

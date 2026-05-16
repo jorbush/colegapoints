@@ -3,6 +3,11 @@ import Base from "../../layouts/Base.astro";
 import { db } from "../../db";
 import { groups, members, pointEvents } from "../../db/schema";
 import { eq } from "drizzle-orm";
+import { calculatePointTotals } from "../../lib/points";
+import Leaderboard from "../../components/Leaderboard.astro";
+import RecentActivity from "../../components/RecentActivity.astro";
+import JoinPrompt from "../../components/JoinPrompt.astro";
+import PointsModal from "../../components/PointsModal.astro";
 
 const { id } = Astro.params;
 if (!id) return Astro.redirect("/");
@@ -10,36 +15,31 @@ if (!id) return Astro.redirect("/");
 const group = await db.query.groups.findFirst({ where: eq(groups.id, id) });
 if (!group) return Astro.redirect("/");
 
-// Get all members
 const groupMembers = await db.query.members.findMany({
   where: eq(members.groupId, id),
   orderBy: (m, { asc }) => [asc(m.joinedAt)],
 });
 
-// Compute point totals per member via point events
 const allEvents = await db.query.pointEvents.findMany({
   where: eq(pointEvents.groupId, id),
   orderBy: (e, { desc }) => [desc(e.createdAt)],
 });
 
-const pointTotals: Record<string, number> = {};
-for (const m of groupMembers) pointTotals[m.id] = 0;
-for (const ev of allEvents) {
-  if (ev.toMemberId in pointTotals) pointTotals[ev.toMemberId] += ev.delta;
-}
-
-// Sort members by points descending for leaderboard
-const sorted = [...groupMembers].sort(
-  (a, b) => (pointTotals[b.id] ?? 0) - (pointTotals[a.id] ?? 0),
-);
-
-// Recent events for the mini feed (last 5)
+const pointTotals = calculatePointTotals(groupMembers, allEvents);
 const recentEvents = allEvents.slice(0, 5);
 const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
 ---
 
 <Base title={group.name} description={`Manage friend points for ${group.name}`}>
-  <div class="max-w-2xl mx-auto px-4 py-10">
+  <div 
+    id="group-page-container"
+    class="max-w-2xl mx-auto px-4 py-10"
+    data-group-id={id}
+    data-group-name={group.name}
+    data-group-description={group.description ?? ""}
+    data-group-members={JSON.stringify(groupMembers)}
+    data-vapid-public-key={import.meta.env.VAPID_PUBLIC_KEY ?? ""}
+  >
     <!-- Header -->
     <header class="mb-10 animate-slide-up">
       <div class="flex items-center justify-between gap-4 mb-6">
@@ -52,7 +52,6 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
         <div class="flex flex-wrap gap-1.5 sm:gap-3 justify-end shrink-0">
           <button
             id="copy-invite-btn"
-            data-url={Astro.url.href}
             class="btn btn-ghost px-2 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-sm uppercase italic"
           >
             🔗 Invite
@@ -85,139 +84,13 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
       }
     </header>
 
-    <!-- Join prompt (shown via JS if not a member) -->
-    <div
-      id="join-prompt"
-      class="card p-8 mb-8 hidden animate-pop-in bg-[var(--accent-light)]"
-    >
-      <h2 class="text-3xl font-black mb-6 uppercase italic">
-        👋 Join the squad
-      </h2>
-      <div class="flex flex-col gap-5">
-        <div>
-          <label class="text-sm font-black uppercase block mb-1"
-            >Your name</label
-          >
-          <input
-            id="join-name"
-            type="text"
-            placeholder="What do your colegas call you?"
-            maxlength="30"
-            class="input"
-          />
-        </div>
-        <div>
-          <label class="text-sm font-black uppercase block mb-3"
-            >Pick your emoji</label
-          >
-          <div id="emoji-picker" class="flex flex-wrap gap-2">
-            {
-              [
-                "😎",
-                "🤩",
-                "🦁",
-                "🐻",
-                "🦊",
-                "🐸",
-                "🐧",
-                "🦄",
-                "🐙",
-                "🦋",
-                "🌵",
-                "🍕",
-                "🎸",
-                "🚀",
-                "⚡",
-                "🔥",
-                "💎",
-                "🏆",
-                "🌊",
-                "🎭",
-              ].map((e) => (
-                <button
-                  type="button"
-                  data-emoji={e}
-                  class="emoji-btn text-3xl p-2 border-2 border-[var(--border)] bg-white hover:translate-x-1 hover:-translate-y-1 transition-transform shadow-[2px_2px_0px_var(--border)] active:translate-x-0 active:translate-y-0 active:shadow-none"
-                >
-                  {e}
-                </button>
-              ))
-            }
-          </div>
-        </div>
-        <button
-          id="join-btn"
-          class="btn btn-primary w-full py-4 text-xl uppercase italic mt-2"
-        >
-          Join the squad →
-        </button>
-        <p
-          id="join-error"
-          class="text-[var(--negative)] font-bold text-sm hidden p-2 border-2 border-[var(--negative)] bg-[var(--negative-bg)]"
-        >
-        </p>
-      </div>
-    </div>
+    <JoinPrompt 
+      groupId={id} 
+      groupName={group.name} 
+      groupDescription={group.description ?? ""} 
+    />
 
-    <!-- Leaderboard -->
-    <section class="mb-12">
-      <h2
-        class="text-sm font-black uppercase tracking-widest mb-6 bg-[var(--accent)] inline-block px-2 border-2 border-[var(--border)]"
-      >
-        Leaderboard
-      </h2>
-      {
-        sorted.length === 0 ? (
-          <div class="card p-12 text-center">
-            <div class="text-6xl mb-4">🏜️</div>
-            <p class="text-2xl font-black uppercase italic">No colegas yet.</p>
-            <p class="text-lg font-bold mt-2">
-              Share the link to get the party started!
-            </p>
-          </div>
-        ) : (
-          <ul class="flex flex-col gap-4 stagger">
-            {sorted.map((m, i) => {
-              const pts = pointTotals[m.id] ?? 0;
-              const isTop = i === 0 && pts > 0;
-              const medalEmojis = ["🥇", "🥈", "🥉"];
-              const medal = medalEmojis[i] ?? null;
-              return (
-                <li
-                  id={`member-${m.id}`}
-                  class={`card p-5 flex items-center gap-5 animate-slide-up ${isTop ? "bg-[var(--accent-light)]" : ""}`}
-                  data-member-id={m.id}
-                >
-                  <div class="text-4xl w-16 h-16 flex items-center justify-center border-4 border-[var(--border)] bg-white shadow-[3px_3px_0px_var(--border)] flex-shrink-0">
-                    {m.avatarEmoji}
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2">
-                      <span class="text-2xl font-black uppercase tracking-tight truncate">
-                        {m.name}
-                      </span>
-                      {medal && <span class="text-xl">{medal}</span>}
-                      {isTop && (
-                        <span class="tag tag-brand ml-2">Top Colega</span>
-                      )}
-                    </div>
-                    <div class="text-sm font-bold italic mt-1">
-                      Joined {new Date(m.joinedAt).toLocaleDateString()}
-                    </div>
-                  </div>
-                  <div
-                    class={`text-4xl font-black tabular-nums border-4 border-[var(--border)] px-4 py-2 shadow-[3px_3px_0px_var(--border)] ${pts > 0 ? "bg-[var(--positive-bg)] text-[var(--positive)]" : pts < 0 ? "bg-[var(--negative-bg)] text-[var(--negative)]" : "bg-white text-[var(--muted)]"}`}
-                  >
-                    {pts > 0 ? "+" : ""}
-                    {pts}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        )
-      }
-    </section>
+    <Leaderboard members={groupMembers} pointTotals={pointTotals} />
 
     <!-- Add Points CTA (only shown if member) -->
     <div id="add-points-section" class="hidden animate-slide-up mb-12">
@@ -229,138 +102,14 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
       </button>
     </div>
 
-    <!-- Recent activity -->
-    {
-      recentEvents.length > 0 && (
-        <section class="animate-fade-in">
-          <h2 class="text-sm font-black uppercase tracking-widest mb-6 bg-[var(--accent)] inline-block px-2 border-2 border-[var(--border)]">
-            Recent Activity
-          </h2>
-          <ul class="flex flex-col gap-3">
-            {recentEvents.map((ev) => {
-              const from = memberMap[ev.fromMemberId];
-              const to = memberMap[ev.toMemberId];
-              const positive = ev.delta > 0;
-              if (!from || !to) return null;
-              return (
-                <li class="card card-sm px-5 py-4 flex items-center gap-4 text-base font-bold">
-                  <span
-                    class={`text-2xl font-black px-2 border-2 border-[var(--border)] shadow-[2px_2px_0px_var(--border)] ${positive ? "bg-[var(--positive-bg)] text-[var(--positive)]" : "bg-[var(--negative-bg)] text-[var(--negative)]"}`}
-                  >
-                    {positive ? "+" : ""}
-                    {ev.delta}
-                  </span>
-                  <div class="flex-1 min-w-0">
-                    <span class="font-black uppercase">{from.name}</span>
-                    <span class="italic text-[var(--muted)]">
-                      {" "}
-                      {positive ? "gave" : "took"} to{" "}
-                    </span>
-                    <span class="font-black uppercase">{to.name}</span>
-                    {ev.reason && (
-                      <span class="block text-sm text-[var(--muted)] italic mt-0.5">
-                        "{ev.reason}"
-                      </span>
-                    )}
-                  </div>
-                  <span class="text-xs font-black uppercase text-[var(--muted)] flex-shrink-0">
-                    {new Date(ev.createdAt).toLocaleDateString()}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-          {allEvents.length > 5 && (
-            <a
-              href={`/group/${id}/history`}
-              class="btn btn-outline w-full mt-4 py-3 text-sm uppercase italic"
-            >
-              See full history →
-            </a>
-          )}
-        </section>
-      )
-    }
+    <RecentActivity 
+      events={recentEvents} 
+      memberMap={memberMap} 
+      groupId={id} 
+      totalEventsCount={allEvents.length} 
+    />
 
-    <!-- Add Points Modal -->
-    <div
-      id="points-modal"
-      class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-[rgba(0,0,0,0.8)]"
-    >
-      <div
-        class="card p-8 w-full max-w-sm animate-pop-in relative"
-        id="points-modal-inner"
-      >
-        <div class="flex items-center justify-between mb-8">
-          <h3 class="text-3xl font-black uppercase italic">Points</h3>
-          <button
-            id="close-modal-btn"
-            class="btn btn-ghost w-10 h-10 text-2xl font-black">✕</button
-          >
-        </div>
-
-        <div class="flex flex-col gap-6">
-          <div>
-            <label class="text-sm font-black uppercase block mb-3"
-              >Who gets the points?</label
-            >
-            <div id="target-member-list" class="flex flex-wrap gap-2">
-              <!-- populated by JS -->
-            </div>
-          </div>
-
-          <div>
-            <label class="text-sm font-black uppercase block mb-3">Amount</label
-            >
-            <div class="grid grid-cols-3 gap-2">
-              {
-                [-5, -3, -1, 1, 3, 5].map((v) => (
-                  <button
-                    type="button"
-                    data-delta={v}
-                    class={`delta-btn btn py-3 text-xl font-black ${v > 0 ? "bg-[var(--positive-bg)] text-[var(--positive)]" : "bg-[var(--negative-bg)] text-[var(--negative)]"}`}
-                  >
-                    {v > 0 ? "+" : ""}
-                    {v}
-                  </button>
-                ))
-              }
-            </div>
-            <input
-              id="custom-delta"
-              type="number"
-              placeholder="Or custom amount…"
-              class="input mt-3"
-            />
-          </div>
-
-          <div>
-            <label class="text-sm font-black uppercase block mb-1"
-              >Reason (optional)</label
-            >
-            <input
-              id="point-reason"
-              type="text"
-              placeholder="Why tho? e.g. Forgot to pay back"
-              maxlength="100"
-              class="input"
-            />
-          </div>
-
-          <button
-            id="submit-points-btn"
-            class="btn btn-primary w-full py-4 text-xl uppercase italic mt-2"
-          >
-            Send Points ⭐
-          </button>
-          <p
-            id="points-error"
-            class="text-[var(--negative)] font-bold text-sm hidden p-2 border-2 border-[var(--negative)] bg-[var(--negative-bg)]"
-          >
-          </p>
-        </div>
-      </div>
-    </div>
+    <PointsModal groupId={id} members={groupMembers} />
 
     <!-- Push toggle (shown if member) -->
     <div
@@ -427,49 +176,17 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
   </div>
 </Base>
 
-<script
-  define:vars={{
-    groupId: id,
-    groupName: group.name,
-    groupDescription: group.description ?? "",
-    groupMembers,
-    vapidPublicKey: import.meta.env.VAPID_PUBLIC_KEY ?? "",
-  }}
->
-  const STORAGE_KEY = `cp_member_${groupId}`;
-  const GROUPS_KEY = "cp_groups";
+<script>
+  import { storage } from "../../lib/storage";
+  import { leaveGroup, subscribePush } from "../../lib/api";
 
-  // ── Helpers ─────────────────────────────────────────────────────────────────
-  function getSavedMember() {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "null");
-    } catch {
-      return null;
-    }
-  }
-  function saveMember(m) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(m));
-  }
-
-  function saveGroupToList(member) {
-    try {
-      const existing = JSON.parse(localStorage.getItem(GROUPS_KEY) ?? "[]");
-      const filtered = existing.filter((g) => g.groupId !== groupId);
-      filtered.unshift({
-        groupId,
-        groupName: groupName,
-        groupDescription: groupDescription,
-        memberId: member.id,
-        memberName: member.name,
-        memberEmoji: member.avatarEmoji,
-        joinedAt: Date.now(),
-      });
-      localStorage.setItem(GROUPS_KEY, JSON.stringify(filtered));
-    } catch {}
-  }
+  const container = document.getElementById("group-page-container") as HTMLElement;
+  const groupId = container.dataset.groupId!;
+  const groupName = container.dataset.groupName!;
+  const vapidPublicKey = container.dataset.vapidPublicKey!;
 
   // ── Init ────────────────────────────────────────────────────────────────────
-  const saved = getSavedMember();
+  const saved = storage.getMember(groupId);
 
   if (!saved) {
     document.getElementById("join-prompt")?.classList.remove("hidden");
@@ -480,66 +197,11 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
     initPushToggle(saved);
   }
 
-  // ── Emoji picker ────────────────────────────────────────────────────────────
-  let selectedEmoji = "😊";
-  document.querySelectorAll(".emoji-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".emoji-btn").forEach((b) => {
-        b.classList.remove(
-          "bg-[var(--accent)]",
-          "translate-x-1",
-          "-translate-y-1",
-          "shadow-none",
-        );
-        b.style.boxShadow = "2px 2px 0px var(--border)";
-      });
-      btn.classList.add(
-        "bg-[var(--accent)]",
-        "translate-x-1",
-        "-translate-y-1",
-      );
-      btn.style.boxShadow = "none";
-      selectedEmoji = btn.dataset.emoji;
-    });
-  });
-
-  // ── Join ────────────────────────────────────────────────────────────────────
-  document.getElementById("join-btn")?.addEventListener("click", async () => {
-    const nameInput = document.getElementById("join-name");
-    const name = nameInput?.value.trim();
-    const errorEl = document.getElementById("join-error");
-    if (!name) {
-      errorEl.textContent = "Enter your name!";
-      errorEl.classList.remove("hidden");
-      return;
-    }
-    const btn = document.getElementById("join-btn");
-    btn.disabled = true;
-    btn.textContent = "Joining…";
-
-    const res = await fetch(`/api/groups/${groupId}/join`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, emoji: selectedEmoji }),
-    });
-    const json = await res.json();
-    if (res.ok) {
-      saveMember(json);
-      saveGroupToList(json);
-      window.location.reload();
-    } else {
-      errorEl.textContent = json.error;
-      errorEl.classList.remove("hidden");
-      btn.disabled = false;
-      btn.textContent = "Join the squad →";
-    }
-  });
-
   // ── Copy invite ─────────────────────────────────────────────────────────────
   document
     .getElementById("copy-invite-btn")
     ?.addEventListener("click", async () => {
-      const btn = document.getElementById("copy-invite-btn");
+      const btn = document.getElementById("copy-invite-btn")!;
       await navigator.clipboard.writeText(window.location.href);
       btn.textContent = "✅ Copied!";
       setTimeout(() => {
@@ -568,111 +230,8 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
     if (e.target === modal) closeModal();
   });
 
-  // Populate target member list in modal
-  let selectedTargetId = null;
-  const targetList = document.getElementById("target-member-list");
-  const savedId = saved?.id;
-
-  groupMembers.forEach((m) => {
-    if (m.id === savedId) return; // skip self
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.dataset.memberId = m.id;
-    btn.innerHTML = `<span class="text-2xl">${m.avatarEmoji}</span> <span class="text-sm font-black uppercase">${m.name}</span>`;
-    btn.className = "target-btn btn btn-ghost px-3 py-2 gap-2";
-    btn.addEventListener("click", () => {
-      document
-        .querySelectorAll(".target-btn")
-        .forEach((b) =>
-          b.classList.remove(
-            "bg-[var(--accent)]",
-            "-translate-y-1",
-            "translate-x-1",
-          ),
-        );
-      btn.classList.add(
-        "bg-[var(--accent)]",
-        "-translate-y-1",
-        "translate-x-1",
-      );
-      selectedTargetId = m.id;
-    });
-    targetList?.appendChild(btn);
-  });
-
-  // Delta selection
-  let selectedDelta = null;
-  document.querySelectorAll(".delta-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      document
-        .querySelectorAll(".delta-btn")
-        .forEach((b) =>
-          b.classList.remove(
-            "bg-[var(--brand)]",
-            "text-white",
-            "-translate-y-1",
-            "translate-x-1",
-          ),
-        );
-      btn.classList.add(
-        "bg-[var(--brand)]",
-        "text-white",
-        "-translate-y-1",
-        "translate-x-1",
-      );
-      selectedDelta = parseInt(btn.dataset.delta);
-      document.getElementById("custom-delta").value = "";
-    });
-  });
-
-  // Submit points
-  document
-    .getElementById("submit-points-btn")
-    ?.addEventListener("click", async () => {
-      const customVal = document.getElementById("custom-delta")?.value;
-      const delta = customVal ? parseInt(customVal) : selectedDelta;
-      const reason = document.getElementById("point-reason")?.value;
-      const errorEl = document.getElementById("points-error");
-
-      if (!selectedTargetId) {
-        errorEl.textContent = "Select a member!";
-        errorEl.classList.remove("hidden");
-        return;
-      }
-      if (!delta || delta === 0) {
-        errorEl.textContent = "Pick or enter points!";
-        errorEl.classList.remove("hidden");
-        return;
-      }
-
-      const btn = document.getElementById("submit-points-btn");
-      btn.disabled = true;
-      btn.textContent = "Sending…";
-
-      const res = await fetch(`/api/groups/${groupId}/points`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fromMemberId: savedId,
-          toMemberId: selectedTargetId,
-          delta,
-          reason,
-        }),
-      });
-      const json = await res.json();
-      if (res.ok) {
-        closeModal();
-        window.location.reload();
-      } else {
-        errorEl.textContent = json.error;
-        errorEl.classList.remove("hidden");
-        btn.disabled = false;
-        btn.textContent = "Send Points ⭐";
-      }
-    });
-
   // ── Push notifications ───────────────────────────────────────────────────────
-  function urlBase64ToUint8Array(base64String) {
+  function urlBase64ToUint8Array(base64String: string) {
     const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
     const base64 = (base64String + padding)
       .replace(/-/g, "+")
@@ -681,21 +240,21 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
     return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)));
   }
 
-  async function initPushToggle(member) {
+  async function initPushToggle(member: any) {
     if (
       !("serviceWorker" in navigator) ||
       !("PushManager" in window) ||
       !vapidPublicKey
     )
       return;
-    const toggleBtn = document.getElementById("push-toggle-btn");
+    const toggleBtn = document.getElementById("push-toggle-btn") as HTMLButtonElement;
     const thumb = toggleBtn?.querySelector(".push-thumb");
 
     // Check current state
     const reg = await navigator.serviceWorker.register("/sw.js");
     const existingSub = await reg.pushManager.getSubscription();
 
-    const setActive = (active) => {
+    const setActive = (active: boolean) => {
       toggleBtn?.setAttribute("aria-checked", active ? "true" : "false");
       if (active) {
         toggleBtn?.style.setProperty("background-color", "var(--accent)");
@@ -720,14 +279,7 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
             userVisibleOnly: true,
             applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
           });
-          await fetch(`/api/groups/${groupId}/subscribe`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              memberId: member.id,
-              subscription: sub.toJSON(),
-            }),
-          });
+          await subscribePush(groupId, member.id, sub.toJSON());
           setActive(true);
         } catch (e) {
           console.error("Push subscribe failed:", e);
@@ -740,7 +292,7 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
   const leaveModal = document.getElementById("leave-modal");
   const leaveNameEl = document.getElementById("leave-group-name");
   const leaveErrorEl = document.getElementById("leave-error");
-  const leaveConfirm = document.getElementById("leave-confirm-btn");
+  const leaveConfirm = document.getElementById("leave-confirm-btn") as HTMLButtonElement;
 
   if (leaveNameEl) leaveNameEl.textContent = groupName;
 
@@ -771,31 +323,15 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
     leaveErrorEl?.classList.add("hidden");
 
     try {
-      const res = await fetch(`/api/groups/${groupId}/leave`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ memberId: saved.id }),
-      });
-
-      if (!res.ok) {
-        const json = await res.json();
-        throw new Error(json.error ?? "Failed to leave group");
-      }
-
-      // Clear localStorage
-      localStorage.removeItem(STORAGE_KEY);
-      try {
-        const groups = JSON.parse(localStorage.getItem(GROUPS_KEY) ?? "[]");
-        localStorage.setItem(
-          GROUPS_KEY,
-          JSON.stringify(groups.filter((g) => g.groupId !== groupId)),
-        );
-      } catch {}
-
+      await leaveGroup(groupId, saved.id);
+      storage.removeMember(groupId);
+      storage.removeGroupFromList(groupId);
       window.location.href = "/";
-    } catch (err) {
-      leaveErrorEl.textContent = err.message;
-      leaveErrorEl?.classList.remove("hidden");
+    } catch (err: any) {
+      if (leaveErrorEl) {
+        leaveErrorEl.textContent = err.message;
+        leaveErrorEl.classList.remove("hidden");
+      }
       leaveConfirm.disabled = false;
       leaveConfirm.textContent = "Leave";
     }
