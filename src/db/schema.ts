@@ -40,6 +40,18 @@ export const pointEvents = sqliteTable('point_events', {
     .$defaultFn(() => new Date()),
 });
 
+export const syncCodes = sqliteTable('sync_codes', {
+  id: text('id').primaryKey(), // 6-digit code
+  memberId: text('member_id')
+    .notNull()
+    .references(() => members.id, { onDelete: 'cascade' }),
+  groupId: text('group_id')
+    .notNull()
+    .references(() => groups.id, { onDelete: 'cascade' }),
+  expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
+});
+
 export type Group = typeof groups.$inferSelect;
 export type Member = typeof members.$inferSelect;
 export type PointEvent = typeof pointEvents.$inferSelect;
+export type SyncCode = typeof syncCodes.$inferSelect;

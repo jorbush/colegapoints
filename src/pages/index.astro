@@ -84,6 +84,33 @@ import Base from '../layouts/Base.astro';
       </p>
     </section>
 
+    <!-- Sync / Import section -->
+    <section class="card animate-slide-up w-full p-8" style="animation-delay:150ms">
+      <h2 class="mb-4 flex items-center gap-2 text-2xl font-black uppercase italic">
+        <span>🔄</span> Sync existing group
+      </h2>
+      <p class="mb-6 text-sm font-bold text-[var(--muted)] italic">
+        Enter a sync code from your browser to move your profile here.
+      </p>
+      <div class="flex gap-2">
+        <input
+          id="sync-code-input"
+          type="text"
+          placeholder="e.g. AB12XY"
+          maxlength="6"
+          class="input flex-1 tracking-widest uppercase"
+        />
+        <button id="sync-redeem-btn" class="btn btn-primary px-6 py-4 uppercase italic">
+          Sync
+        </button>
+      </div>
+      <p
+        id="sync-error"
+        class="mt-3 hidden border-2 border-[var(--negative)] bg-[var(--negative-bg)] p-2 text-sm font-bold text-[var(--negative)]"
+      >
+      </p>
+    </section>
+
     <!-- Invite hint -->
     <p class="animate-fade-in text-center text-sm font-bold" style="animation-delay:300ms">
       Got an invite link? Just open it — you'll join automatically. 🔗
@@ -93,7 +120,7 @@ import Base from '../layouts/Base.astro';
 
 <script>
   import { storage } from '../lib/storage';
-  import { createGroup } from '../lib/api';
+  import { createGroup, redeemSyncCode } from '../lib/api';
 
   function renderGroups() {
     const groups = storage.getGroups();
@@ -164,6 +191,32 @@ import Base from '../layouts/Base.astro';
       errorEl.classList.remove('hidden');
       btn.disabled = false;
       btn.textContent = 'Create Group →';
+    }
+  });
+
+  // ── Sync Code ─────────────────────────────────────────────────────────────
+  const syncInput = document.getElementById('sync-code-input') as HTMLInputElement;
+  const syncBtn = document.getElementById('sync-redeem-btn') as HTMLButtonElement;
+  const syncError = document.getElementById('sync-error') as HTMLParagraphElement;
+
+  syncBtn?.addEventListener('click', async () => {
+    const code = syncInput.value.trim().toUpperCase();
+    if (!code) return;
+
+    syncBtn.disabled = true;
+    syncBtn.textContent = '...';
+    syncError.classList.add('hidden');
+
+    try {
+      const { member, group } = await redeemSyncCode(code);
+      storage.saveMember(group.id, member);
+      storage.saveGroupToList(group.id, group.name, group.description || '', member);
+      window.location.href = `/group/${group.id}`;
+    } catch (err: any) {
+      syncError.textContent = err.message;
+      syncError.classList.remove('hidden');
+      syncBtn.disabled = false;
+      syncBtn.textContent = 'Sync';
     }
   });
 </script>

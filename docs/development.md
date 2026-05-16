@@ -10,18 +10,21 @@ Follow these steps to set up ColegaPoints for local development.
 ## Getting Started
 
 1. **Clone the repository**:
+
    ```sh
    git clone https://github.com/jorbush/colegapoints.git
    cd colegapoints
    ```
 
 2. **Install dependencies**:
+
    ```sh
    npm install
    ```
 
 3. **Configure Environment Variables**:
    Copy `.env.example` to `.env` and fill in your values.
+
    ```sh
    cp .env.example .env
    ```
@@ -36,9 +39,11 @@ Follow these steps to set up ColegaPoints for local development.
 
 5. **Generate VAPID Keys**:
    Web Push requires VAPID keys for authentication.
+
    ```sh
    npx web-push generate-vapid-keys
    ```
+
    Add the public and private keys to your `.env`.
 
 6. **Start the development server**:

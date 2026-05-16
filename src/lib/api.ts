@@ -57,3 +57,25 @@ export async function subscribePush(groupId: string, memberId: string, subscript
     throw new Error(json.error ?? 'Failed to subscribe to push');
   }
 }
+
+export async function createSyncCode(groupId: string, memberId: string) {
+  const res = await fetch('/api/sync/create', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ groupId, memberId }),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error ?? 'Failed to create sync code');
+  return json.code;
+}
+
+export async function redeemSyncCode(code: string) {
+  const res = await fetch('/api/sync/redeem', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code }),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error ?? 'Failed to redeem sync code');
+  return json; // { member, group }
+}

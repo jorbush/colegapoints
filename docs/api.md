@@ -3,6 +3,7 @@
 All API routes return JSON and use standard HTTP status codes.
 
 ## Base URL
+
 `/api`
 
 ---
@@ -10,9 +11,11 @@ All API routes return JSON and use standard HTTP status codes.
 ## Groups
 
 ### `POST /api/groups`
+
 Create a new point group.
 
 **Body:**
+
 ```json
 {
   "name": "Team Rocket",
@@ -21,6 +24,7 @@ Create a new point group.
 ```
 
 **Response (201 Created):**
+
 ```json
 {
   "id": "abc123xy"
@@ -28,9 +32,11 @@ Create a new point group.
 ```
 
 ### `POST /api/groups/[id]/join`
+
 Join an existing group.
 
 **Body:**
+
 ```json
 {
   "name": "Ash",
@@ -39,6 +45,7 @@ Join an existing group.
 ```
 
 **Response (201 Created):**
+
 ```json
 {
   "memberId": "mem_xyz123"
@@ -46,9 +53,11 @@ Join an existing group.
 ```
 
 ### `POST /api/groups/[id]/leave`
+
 Leave a group.
 
 **Body:**
+
 ```json
 {
   "memberId": "mem_xyz123"
@@ -56,6 +65,7 @@ Leave a group.
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true
@@ -67,9 +77,11 @@ Leave a group.
 ## Points
 
 ### `POST /api/groups/[id]/points`
+
 Add a point event (give or take points).
 
 **Body:**
+
 ```json
 {
   "fromMemberId": "mem_source",
@@ -80,6 +92,7 @@ Add a point event (give or take points).
 ```
 
 **Response (201 Created):**
+
 ```json
 {
   "id": "evt_abc123",
@@ -92,9 +105,11 @@ Add a point event (give or take points).
 ## Subscriptions
 
 ### `POST /api/groups/[id]/subscribe`
+
 Subscribe to push notifications for a group.
 
 **Body:**
+
 ```json
 {
   "memberId": "mem_xyz123",
@@ -103,6 +118,7 @@ Subscribe to push notifications for a group.
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "success": true
