@@ -29,10 +29,10 @@ export const pointEvents = sqliteTable('point_events', {
     .references(() => groups.id, { onDelete: 'cascade' }),
   fromMemberId: text('from_member_id')
     .notNull()
-    .references(() => members.id),
+    .references(() => members.id, { onDelete: 'cascade' }),
   toMemberId: text('to_member_id')
     .notNull()
-    .references(() => members.id),
+    .references(() => members.id, { onDelete: 'cascade' }),
   delta: integer('delta').notNull(), // positive or negative
   reason: text('reason'),
   createdAt: integer('created_at', { mode: 'timestamp' })
