@@ -54,7 +54,11 @@ describe('PointsModal component', () => {
     expect(result).toContain('id="points-modal"');
     expect(result).toContain('overflow-y-auto');
     expect(result).toContain('flex-col');
-    expect(result).toContain('my-auto');
-    expect(result).toContain('sm:my-0');
+    expect(result).toContain('min-h-screen');
+    expect(result).toContain('sm:min-h-0');
+    expect(result).toContain('rounded-none');
+    expect(result).toContain('sm:rounded-lg');
+    expect(result).toContain('border-0');
+    expect(result).toContain('sm:border-4');
   });
 });
