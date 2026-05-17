@@ -90,6 +90,8 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
       <button
         id="add-points-btn"
         class="btn btn-primary w-full py-6 text-3xl uppercase italic shadow-lg"
+        disabled={groupMembers.length === 1}
+        title={groupMembers.length === 1 ? 'Add more members to give or take points' : undefined}
       >
         ⭐ Give / Take Points
       </button>
@@ -286,7 +288,11 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
     modal?.classList.add('flex');
   };
 
-  document.getElementById('add-points-btn')?.addEventListener('click', openModal);
+  const addPointsBtn = document.getElementById('add-points-btn') as HTMLButtonElement | null;
+  addPointsBtn?.addEventListener('click', () => {
+    if (addPointsBtn.disabled) return;
+    openModal();
+  });
   document.getElementById('close-modal-btn')?.addEventListener('click', closeModal);
   modal?.addEventListener('click', (e) => {
     if (e.target === modal) closeModal();
