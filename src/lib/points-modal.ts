@@ -21,15 +21,19 @@ export function initPointsModal(modal: HTMLElement) {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.dataset.memberId = m.id;
-    btn.innerHTML = `<span class="text-2xl">${m.avatarEmoji}</span> <span class="text-sm font-black uppercase">${m.name}</span>`;
-    btn.className = 'target-btn btn btn-ghost px-3 py-2 gap-2';
+    btn.innerHTML = `
+      <span class="text-2xl">${m.avatarEmoji}</span>
+      <span class="text-sm font-black uppercase">${m.name}</span>
+      <span class="target-check absolute -top-1.5 -right-1.5 hidden flex h-5 w-5 items-center justify-center rounded-full border-2 border-[var(--border)] bg-[var(--brand)] text-[10px] font-black text-white shadow-[1px_1px_0px_var(--border)] animate-pop-in">✓</span>
+    `;
+    btn.className = 'target-btn btn btn-ghost px-3 py-2 gap-2 relative';
     btn.addEventListener('click', () => {
-      modal
-        .querySelectorAll('.target-btn')
-        .forEach((b) =>
-          b.classList.remove('bg-[var(--accent)]', '-translate-y-1', 'translate-x-1')
-        );
+      modal.querySelectorAll('.target-btn').forEach((b) => {
+        b.classList.remove('bg-[var(--accent)]', '-translate-y-1', 'translate-x-1');
+        b.querySelector('.target-check')?.classList.add('hidden');
+      });
       btn.classList.add('bg-[var(--accent)]', '-translate-y-1', 'translate-x-1');
+      btn.querySelector('.target-check')?.classList.remove('hidden');
       selectedTargetId = m.id;
     });
     targetList?.appendChild(btn);

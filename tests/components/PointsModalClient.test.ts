@@ -110,4 +110,66 @@ describe('PointsModal client logic (JSDOM)', () => {
     expect(targetBtn.classList.contains('-translate-y-1')).toBe(true);
     expect(targetBtn.classList.contains('translate-x-1')).toBe(true);
   });
+
+  it('renders a checkmark badge inside each target button which is initially hidden', () => {
+    // Current user is Alice (id: '1')
+    localStorage.setItem(
+      'cp_member_g1',
+      JSON.stringify({ id: '1', name: 'Alice', avatarEmoji: '😎' })
+    );
+
+    const modalEl = createModalDOM('g1', members3);
+    document.body.appendChild(modalEl);
+
+    initPointsModal(modalEl);
+
+    const targetBtns = modalEl.querySelectorAll('.target-btn');
+    expect(targetBtns.length).toBe(2);
+
+    targetBtns.forEach((btn) => {
+      const badge = btn.querySelector('.target-check') as HTMLElement;
+      expect(badge).not.toBeNull();
+      expect(badge.textContent).toBe('✓');
+      expect(badge.classList.contains('hidden')).toBe(true);
+    });
+  });
+
+  it('toggles visibility of the checkmark badge only on the selected member button', () => {
+    // Current user is Alice (id: '1')
+    localStorage.setItem(
+      'cp_member_g1',
+      JSON.stringify({ id: '1', name: 'Alice', avatarEmoji: '😎' })
+    );
+
+    const modalEl = createModalDOM('g1', members3);
+    document.body.appendChild(modalEl);
+
+    initPointsModal(modalEl);
+
+    const targetBtns = modalEl.querySelectorAll('.target-btn');
+    const bobBtn = Array.from(targetBtns).find(
+      (btn) => (btn as HTMLElement).dataset.memberId === '2'
+    ) as HTMLElement;
+    const charlieBtn = Array.from(targetBtns).find(
+      (btn) => (btn as HTMLElement).dataset.memberId === '3'
+    ) as HTMLElement;
+
+    expect(bobBtn).not.toBeUndefined();
+    expect(charlieBtn).not.toBeUndefined();
+
+    // Select Bob
+    bobBtn.click();
+
+    const bobBadge = bobBtn.querySelector('.target-check') as HTMLElement;
+    const charlieBadge = charlieBtn.querySelector('.target-check') as HTMLElement;
+
+    expect(bobBadge.classList.contains('hidden')).toBe(false);
+    expect(charlieBadge.classList.contains('hidden')).toBe(true);
+
+    // Select Charlie
+    charlieBtn.click();
+
+    expect(bobBadge.classList.contains('hidden')).toBe(true);
+    expect(charlieBadge.classList.contains('hidden')).toBe(false);
+  });
 });
