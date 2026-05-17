@@ -11,7 +11,7 @@ export function initPointsModal(modal: HTMLElement) {
   };
 
   // ── Target selection ────────────────────────────────────────────────────────
-  let selectedTargetId: string | null = null;
+  let selectedTargetIds: string[] = [];
   const targetList = modal.querySelector('#target-member-list');
   const saved = storage.getMember(groupId);
   const savedId = saved?.id;
@@ -28,13 +28,16 @@ export function initPointsModal(modal: HTMLElement) {
     `;
     btn.className = 'target-btn btn btn-ghost px-3 py-2 gap-2 relative';
     btn.addEventListener('click', () => {
-      modal.querySelectorAll('.target-btn').forEach((b) => {
-        b.classList.remove('bg-[var(--accent)]', '-translate-y-1', 'translate-x-1');
-        b.querySelector('.target-check')?.classList.add('hidden');
-      });
-      btn.classList.add('bg-[var(--accent)]', '-translate-y-1', 'translate-x-1');
-      btn.querySelector('.target-check')?.classList.remove('hidden');
-      selectedTargetId = m.id;
+      const idx = selectedTargetIds.indexOf(m.id);
+      if (idx > -1) {
+        selectedTargetIds.splice(idx, 1);
+        btn.classList.remove('bg-[var(--accent)]', '-translate-y-1', 'translate-x-1');
+        btn.querySelector('.target-check')?.classList.add('hidden');
+      } else {
+        selectedTargetIds.push(m.id);
+        btn.classList.add('bg-[var(--accent)]', '-translate-y-1', 'translate-x-1');
+        btn.querySelector('.target-check')?.classList.remove('hidden');
+      }
     });
     targetList?.appendChild(btn);
   });
@@ -70,7 +73,7 @@ export function initPointsModal(modal: HTMLElement) {
     const reason = (modal.querySelector('#point-reason') as HTMLInputElement | null)?.value;
     const errorEl = modal.querySelector('#points-error') as HTMLElement;
 
-    if (!selectedTargetId) {
+    if (selectedTargetIds.length === 0) {
       errorEl.textContent = 'Select a member!';
       errorEl.classList.remove('hidden');
       return;
@@ -88,7 +91,7 @@ export function initPointsModal(modal: HTMLElement) {
     try {
       await sendPoints(groupId, {
         fromMemberId: savedId,
-        toMemberId: selectedTargetId,
+        toMemberIds: selectedTargetIds,
         delta,
         reason,
       });
@@ -104,6 +107,7 @@ export function initPointsModal(modal: HTMLElement) {
 
   // Return the selected target ID state (useful for unit testing validation)
   return {
-    getSelectedTargetId: () => selectedTargetId,
+    getSelectedTargetId: () => (selectedTargetIds.length === 1 ? selectedTargetIds[0] : null),
+    getSelectedTargetIds: () => selectedTargetIds,
   };
 }

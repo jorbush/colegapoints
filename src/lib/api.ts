@@ -22,7 +22,13 @@ export async function joinGroup(groupId: string, name: string, emoji: string) {
 
 export async function sendPoints(
   groupId: string,
-  data: { fromMemberId: string; toMemberId: string; delta: number; reason?: string }
+  data: {
+    fromMemberId: string;
+    toMemberId?: string;
+    toMemberIds?: string[];
+    delta: number;
+    reason?: string;
+  }
 ) {
   const res = await fetch(`/api/groups/${groupId}/points`, {
     method: 'POST',

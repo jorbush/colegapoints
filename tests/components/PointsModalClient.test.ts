@@ -134,7 +134,7 @@ describe('PointsModal client logic (JSDOM)', () => {
     });
   });
 
-  it('toggles visibility of the checkmark badge only on the selected member button', () => {
+  it('allows multiple target members to be selected simultaneously and toggled', () => {
     // Current user is Alice (id: '1')
     localStorage.setItem(
       'cp_member_g1',
@@ -144,7 +144,7 @@ describe('PointsModal client logic (JSDOM)', () => {
     const modalEl = createModalDOM('g1', members3);
     document.body.appendChild(modalEl);
 
-    initPointsModal(modalEl);
+    const state = initPointsModal(modalEl);
 
     const targetBtns = modalEl.querySelectorAll('.target-btn');
     const bobBtn = Array.from(targetBtns).find(
@@ -165,11 +165,68 @@ describe('PointsModal client logic (JSDOM)', () => {
 
     expect(bobBadge.classList.contains('hidden')).toBe(false);
     expect(charlieBadge.classList.contains('hidden')).toBe(true);
+    expect(state.getSelectedTargetId()).toBe('2');
+    expect(state.getSelectedTargetIds()).toEqual(['2']);
 
-    // Select Charlie
+    // Select Charlie as well
     charlieBtn.click();
+
+    expect(bobBadge.classList.contains('hidden')).toBe(false);
+    expect(charlieBadge.classList.contains('hidden')).toBe(false);
+    expect(state.getSelectedTargetId()).toBeNull(); // Multiple are selected, so single target helper returns null
+    expect(state.getSelectedTargetIds()).toEqual(['2', '3']);
+
+    // Deselect Bob
+    bobBtn.click();
 
     expect(bobBadge.classList.contains('hidden')).toBe(true);
     expect(charlieBadge.classList.contains('hidden')).toBe(false);
+    expect(state.getSelectedTargetId()).toBe('3');
+    expect(state.getSelectedTargetIds()).toEqual(['3']);
+  });
+
+  it('submits points for multiple selected target members', async () => {
+    // Current user is Alice (id: '1')
+    localStorage.setItem(
+      'cp_member_g1',
+      JSON.stringify({ id: '1', name: 'Alice', avatarEmoji: '😎' })
+    );
+
+    const modalEl = createModalDOM('g1', members3);
+    document.body.appendChild(modalEl);
+
+    initPointsModal(modalEl);
+
+    const targetBtns = modalEl.querySelectorAll('.target-btn');
+    const bobBtn = Array.from(targetBtns).find(
+      (btn) => (btn as HTMLElement).dataset.memberId === '2'
+    ) as HTMLElement;
+    const charlieBtn = Array.from(targetBtns).find(
+      (btn) => (btn as HTMLElement).dataset.memberId === '3'
+    ) as HTMLElement;
+
+    // Select both Bob and Charlie
+    bobBtn!.click();
+    charlieBtn!.click();
+
+    // Choose +5 delta
+    const deltaBtn = modalEl.querySelector('.delta-btn[data-delta="5"]') as HTMLElement;
+    deltaBtn.click();
+
+    // Enter reason
+    const reasonInput = modalEl.querySelector('#point-reason') as HTMLInputElement;
+    reasonInput.value = 'Awesome work';
+
+    // Submit
+    const submitBtn = modalEl.querySelector('#submit-points-btn') as HTMLElement;
+    submitBtn.click();
+
+    const { sendPoints } = await import('../../src/lib/api');
+    expect(sendPoints).toHaveBeenCalledWith('g1', {
+      fromMemberId: '1',
+      toMemberIds: ['2', '3'],
+      delta: 5,
+      reason: 'Awesome work',
+    });
   });
 });

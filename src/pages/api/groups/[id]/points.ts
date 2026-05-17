@@ -17,49 +17,60 @@ export const POST: APIRoute = async ({ params, request }) => {
     }
 
     const body = await request.json();
-    const { fromMemberId, toMemberId, delta, reason } = body;
+    const { fromMemberId, toMemberId, toMemberIds, delta, reason } = body;
 
-    if (!fromMemberId || !toMemberId || typeof delta !== 'number' || delta === 0) {
+    const targetIds: string[] = Array.isArray(toMemberIds)
+      ? toMemberIds
+      : toMemberId
+        ? [toMemberId]
+        : [];
+
+    if (!fromMemberId || targetIds.length === 0 || typeof delta !== 'number' || delta === 0) {
       return new Response(JSON.stringify({ error: 'Invalid point event data' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    if (fromMemberId === toMemberId) {
+    if (targetIds.includes(fromMemberId)) {
       return new Response(JSON.stringify({ error: 'You cannot give points to yourself' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    const [fromMember, toMember] = await Promise.all([
-      db.query.members.findFirst({ where: eq(members.id, fromMemberId) }),
-      db.query.members.findFirst({ where: eq(members.id, toMemberId) }),
-    ]);
-
+    const fromMember = await db.query.members.findFirst({ where: eq(members.id, fromMemberId) });
     if (!fromMember || fromMember.groupId !== groupId) {
       return new Response(JSON.stringify({ error: 'From-member not in group' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
     }
-    if (!toMember || toMember.groupId !== groupId) {
-      return new Response(JSON.stringify({ error: 'To-member not in group' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
+
+    const toMembers = await Promise.all(
+      targetIds.map((tid) => db.query.members.findFirst({ where: eq(members.id, tid) }))
+    );
+
+    for (let i = 0; i < toMembers.length; i++) {
+      const tm = toMembers[i];
+      if (!tm || tm.groupId !== groupId) {
+        return new Response(JSON.stringify({ error: 'To-member not in group' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
     }
 
-    const id = nanoid(12);
-    await db.insert(pointEvents).values({
-      id,
+    const eventsToInsert = toMembers.map((tm) => ({
+      id: nanoid(12),
       groupId,
       fromMemberId,
-      toMemberId,
+      toMemberId: tm!.id,
       delta,
       reason: reason?.trim() || null,
-    });
+    }));
+
+    await db.insert(pointEvents).values(eventsToInsert);
 
     const sign = delta > 0 ? '+' : '';
     const action = delta > 0 ? 'gave' : 'took';
@@ -67,19 +78,36 @@ export const POST: APIRoute = async ({ params, request }) => {
     const ptsLabel = pts === 1 ? 'point' : 'points';
     const reasonText = reason ? ` — "${reason}"` : '';
 
-    await notifyGroup(
-      groupId,
-      {
-        title: `${toMember.avatarEmoji} ${toMember.name} got ${sign}${delta} ${ptsLabel}!`,
-        body: `${fromMember.name} ${action} ${pts} ${ptsLabel} from ${toMember.name}${reasonText}`,
-      },
-      undefined
-    );
+    if (toMembers.length === 1) {
+      const toMember = toMembers[0]!;
+      await notifyGroup(
+        groupId,
+        {
+          title: `${toMember.avatarEmoji} ${toMember.name} got ${sign}${delta} ${ptsLabel}!`,
+          body: `${fromMember.name} ${action} ${pts} ${ptsLabel} from ${toMember.name}${reasonText}`,
+        },
+        undefined
+      );
+    } else {
+      const names = toMembers.map((m) => m!.name).join(', ');
+      const emojis = toMembers.map((m) => m!.avatarEmoji).join('');
+      await notifyGroup(
+        groupId,
+        {
+          title: `${emojis} Multiple members got ${sign}${delta} ${ptsLabel}!`,
+          body: `${fromMember.name} ${action} ${pts} ${ptsLabel} from ${names}${reasonText}`,
+        },
+        undefined
+      );
+    }
 
-    return new Response(JSON.stringify({ id, delta }), {
-      status: 201,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ id: eventsToInsert[0].id, ids: eventsToInsert.map((e) => e.id), delta }),
+      {
+        status: 201,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   } catch (err) {
     console.error(err);
     return new Response(JSON.stringify({ error: 'Failed to add point event' }), {
