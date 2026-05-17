@@ -40,7 +40,7 @@ Join an existing group.
 ```json
 {
   "name": "Ash",
-  "avatarEmoji": "⚡️"
+  "emoji": "⚡️"
 }
 ```
 
@@ -48,11 +48,13 @@ Join an existing group.
 
 ```json
 {
-  "memberId": "mem_xyz123"
+  "id": "mem_xyz123",
+  "name": "Ash",
+  "avatarEmoji": "⚡️"
 }
 ```
 
-### `POST /api/groups/[id]/leave`
+### `DELETE /api/groups/[id]/leave`
 
 Leave a group.
 
@@ -68,7 +70,7 @@ Leave a group.
 
 ```json
 {
-  "success": true
+  "ok": true
 }
 ```
 
@@ -78,7 +80,7 @@ Leave a group.
 
 ### `POST /api/groups/[id]/points`
 
-Add a point event (give or take points).
+Add a point event (give or take points). Can be given to one or multiple members.
 
 **Body:**
 
@@ -86,16 +88,20 @@ Add a point event (give or take points).
 {
   "fromMemberId": "mem_source",
   "toMemberId": "mem_target",
+  "toMemberIds": ["mem_target1", "mem_target2"],
   "delta": 5,
   "reason": "Great work on the documentation!"
 }
 ```
+
+*Note: Use either `toMemberId` (string) or `toMemberIds` (array of strings).*
 
 **Response (201 Created):**
 
 ```json
 {
   "id": "evt_abc123",
+  "ids": ["evt_abc123"],
   "delta": 5
 }
 ```
@@ -121,7 +127,7 @@ Subscribe to push notifications for a group.
 
 ```json
 {
-  "success": true
+  "ok": true
 }
 ```
 
