@@ -8,6 +8,7 @@ import Leaderboard from '../../components/Leaderboard.astro';
 import RecentActivity from '../../components/RecentActivity.astro';
 import JoinPrompt from '../../components/JoinPrompt.astro';
 import PointsModal from '../../components/PointsModal.astro';
+import ColegaDetailModal from '../../components/ColegaDetailModal.astro';
 
 const { id } = Astro.params;
 if (!id) return Astro.redirect('/');
@@ -102,6 +103,8 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
     />
 
     <PointsModal groupId={id} members={groupMembers} />
+
+    <ColegaDetailModal members={groupMembers} events={allEvents} />
 
     <!-- Sync to App (shown if member and in browser) -->
     <div

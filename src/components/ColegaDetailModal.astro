@@ -1,0 +1,291 @@
+---
+interface Props {
+  members: { id: string; name: string; avatarEmoji: string; joinedAt: number | Date | string }[];
+  events: {
+    id: string;
+    groupId: string;
+    fromMemberId: string;
+    toMemberId: string;
+    delta: number;
+    reason: string | null;
+    createdAt: number | Date | string;
+  }[];
+}
+
+const { members, events } = Astro.props;
+---
+
+<div
+  id="colega-detail-modal"
+  class="animate-fade-in fixed inset-0 z-50 hidden items-center justify-center bg-[rgba(0,0,0,0.8)] p-4"
+  data-members={JSON.stringify(members)}
+  data-events={JSON.stringify(events)}
+>
+  <div
+    class="card animate-pop-in relative w-full max-w-md bg-[var(--surface)] p-8"
+    id="colega-detail-modal-inner"
+  >
+    <div class="mb-6 flex items-center justify-between">
+      <h3 class="text-3xl font-black tracking-tight uppercase italic">Colega Profile</h3>
+      <button id="close-detail-modal-btn" class="btn btn-ghost h-10 w-10 text-2xl font-black"
+        >✕</button
+      >
+    </div>
+
+    <!-- Modal Content -->
+    <div class="flex flex-col gap-6">
+      <!-- Member Info Header -->
+      <div class="flex items-center gap-4 border-b-4 border-[var(--border)] pb-5">
+        <div
+          id="detail-avatar"
+          class="flex h-16 w-16 items-center justify-center border-4 border-[var(--border)] bg-white text-4xl shadow-[3px_3px_0px_var(--border)] select-none"
+        >
+          😊
+        </div>
+        <div>
+          <h4
+            id="detail-name"
+            class="max-w-[240px] truncate text-2xl font-black tracking-tight uppercase"
+          >
+            Name
+          </h4>
+          <p id="detail-joined" class="text-xs font-bold text-[var(--muted)] italic">Joined Date</p>
+        </div>
+      </div>
+
+      <!-- Point Display & Rank -->
+      <div class="grid grid-cols-2 gap-4">
+        <div
+          class="card border-4 border-[var(--border)] bg-white p-4 text-center shadow-[3px_3px_0px_var(--border)]"
+        >
+          <p class="text-xs font-black tracking-wider text-[var(--muted)] uppercase">
+            Exact Points
+          </p>
+          <p
+            id="detail-points"
+            class="mt-2 text-3xl font-black text-[var(--positive)] tabular-nums"
+          >
+            +0
+          </p>
+        </div>
+        <div
+          class="card border-4 border-[var(--border)] bg-white p-4 text-center shadow-[3px_3px_0px_var(--border)]"
+        >
+          <p class="text-xs font-black tracking-wider text-[var(--muted)] uppercase">Squad Rank</p>
+          <p id="detail-rank" class="mt-2 text-3xl font-black">#1</p>
+        </div>
+      </div>
+
+      <!-- Statistics Section -->
+      <div>
+        <label class="mb-2 block text-xs font-black tracking-wider text-[var(--muted)] uppercase"
+          >Statistics</label
+        >
+        <div
+          class="flex flex-col gap-2 rounded-lg border-4 border-[var(--border)] bg-[var(--surface-alt)] p-4 text-sm font-bold shadow-[3px_3px_0px_var(--border)]"
+        >
+          <div class="flex items-center justify-between">
+            <span>⭐ Points Received:</span>
+            <span id="stat-points-received" class="font-black text-[var(--positive)]">+0</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span>💔 Points Deducted:</span>
+            <span id="stat-points-deducted" class="font-black text-[var(--negative)]">-0</span>
+          </div>
+          <hr class="my-1 border-t-2 border-dashed border-[var(--border)]" />
+          <div class="flex items-center justify-between">
+            <span>📤 Points Given to others:</span>
+            <span id="stat-points-given" class="font-black">0</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span>📥 Points Taken from others:</span>
+            <span id="stat-points-taken" class="font-black">0</span>
+          </div>
+          <hr class="my-1 border-t-2 border-dashed border-[var(--border)]" />
+          <div class="flex items-center justify-between text-xs text-[var(--muted)] italic">
+            <span>🔄 Total Interactions:</span>
+            <span id="stat-total-interactions" class="font-black text-[var(--text)] not-italic"
+              >0</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent History Section -->
+      <div>
+        <label class="mb-2 block text-xs font-black tracking-wider text-[var(--muted)] uppercase"
+          >Recent Activity</label
+        >
+        <div id="detail-history-list" class="flex max-h-48 flex-col gap-2 overflow-y-auto pr-1">
+          <!-- Populated by script -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const modal = document.getElementById('colega-detail-modal') as HTMLElement;
+  if (modal) {
+    const members = JSON.parse(modal.dataset.members!) as any[];
+    const events = JSON.parse(modal.dataset.events!) as any[];
+
+    const closeModal = () => {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    };
+
+    modal.querySelector('#close-detail-modal-btn')?.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    const openModalForMember = (memberId: string) => {
+      const member = members.find((m) => m.id === memberId);
+      if (!member) return;
+
+      // Update avatar & name & joined date
+      const avatarEl = modal.querySelector('#detail-avatar')!;
+      avatarEl.textContent = member.avatarEmoji;
+
+      const nameEl = modal.querySelector('#detail-name')!;
+      nameEl.textContent = member.name;
+
+      const joinedEl = modal.querySelector('#detail-joined')!;
+      const joinedDate = new Date(member.joinedAt);
+      joinedEl.textContent = `Joined ${joinedDate.toLocaleDateString()}`;
+
+      // Calculate exact points
+      const exactPoints = events
+        .filter((e) => e.toMemberId === memberId)
+        .reduce((sum, e) => sum + e.delta, 0);
+
+      const pointsEl = modal.querySelector('#detail-points')!;
+      pointsEl.textContent = exactPoints > 0 ? `+${exactPoints}` : `${exactPoints}`;
+      pointsEl.className = `mt-2 text-3xl font-black tabular-nums ${
+        exactPoints > 0
+          ? 'text-[var(--positive)]'
+          : exactPoints < 0
+            ? 'text-[var(--negative)]'
+            : 'text-[var(--muted)]'
+      }`;
+
+      // Calculate Rank
+      const totals: Record<string, number> = {};
+      members.forEach((m) => {
+        totals[m.id] = 0;
+      });
+      events.forEach((e) => {
+        if (e.toMemberId in totals) {
+          totals[e.toMemberId] += e.delta;
+        }
+      });
+      const sortedMembers = [...members].sort((a, b) => (totals[b.id] ?? 0) - (totals[a.id] ?? 0));
+      const rankIndex = sortedMembers.findIndex((m) => m.id === memberId);
+      const rank = rankIndex + 1;
+
+      const rankEl = modal.querySelector('#detail-rank')!;
+      const medalEmojis = ['🥇', '🥈', '🥉'];
+      const medal = medalEmojis[rankIndex] ? `${medalEmojis[rankIndex]} ` : '';
+      rankEl.innerHTML = `${medal}#${rank}`;
+
+      // Statistics calculations
+      const pointsReceived = events
+        .filter((e) => e.toMemberId === memberId && e.delta > 0)
+        .reduce((sum, e) => sum + e.delta, 0);
+
+      const pointsDeducted = events
+        .filter((e) => e.toMemberId === memberId && e.delta < 0)
+        .reduce((sum, e) => sum + e.delta, 0);
+
+      const pointsGiven = events
+        .filter((e) => e.fromMemberId === memberId && e.toMemberId !== memberId && e.delta > 0)
+        .reduce((sum, e) => sum + e.delta, 0);
+
+      const pointsTaken = events
+        .filter((e) => e.fromMemberId === memberId && e.toMemberId !== memberId && e.delta < 0)
+        .reduce((sum, e) => sum + Math.abs(e.delta), 0);
+
+      const totalInteractions = events.filter(
+        (e) => e.toMemberId === memberId || e.fromMemberId === memberId
+      ).length;
+
+      modal.querySelector('#stat-points-received')!.textContent = `+${pointsReceived}`;
+      modal.querySelector('#stat-points-deducted')!.textContent = `${pointsDeducted}`;
+      modal.querySelector('#stat-points-given')!.textContent = `+${pointsGiven}`;
+      modal.querySelector('#stat-points-taken')!.textContent = `-${pointsTaken}`;
+      modal.querySelector('#stat-total-interactions')!.textContent = `${totalInteractions}`;
+
+      // Populate history list
+      const historyList = modal.querySelector('#detail-history-list')!;
+      historyList.innerHTML = '';
+
+      const memberEvents = events
+        .filter((e) => e.toMemberId === memberId || e.fromMemberId === memberId)
+        .slice(0, 5);
+
+      if (memberEvents.length === 0) {
+        historyList.innerHTML = `
+          <div class="text-center py-6 text-sm font-bold text-[var(--muted)] italic">
+            No point activity yet.
+          </div>
+        `;
+      } else {
+        memberEvents.forEach((e) => {
+          const giver = members.find((m) => m.id === e.fromMemberId);
+          const receiver = members.find((m) => m.id === e.toMemberId);
+          const giverName = giver ? giver.name : 'Unknown';
+          const receiverName = receiver ? receiver.name : 'Unknown';
+
+          const card = document.createElement('div');
+          card.className =
+            'card card-sm p-3 bg-white text-xs flex justify-between items-center gap-2 border-2 border-[var(--border)] shadow-[2px_2px_0px_var(--border)]';
+
+          let detailsHtml = '';
+          let tagHtml = '';
+
+          if (e.toMemberId === memberId) {
+            // Received points
+            detailsHtml = `
+              <div class="min-w-0 flex-1">
+                <span class="font-black">From ${giverName}</span>
+                ${e.reason ? `<p class="italic text-[var(--muted)] mt-0.5 truncate">"${e.reason}"</p>` : ''}
+              </div>
+            `;
+            const isPos = e.delta > 0;
+            tagHtml = `<span class="tag ${isPos ? 'tag-pos border-[var(--positive)]' : 'tag-neg border-[var(--negative)]'} font-black shrink-0 select-none">${e.delta > 0 ? `+${e.delta}` : e.delta}</span>`;
+          } else {
+            // Sent/gave/took points
+            detailsHtml = `
+              <div class="min-w-0 flex-1">
+                <span class="font-black">To ${receiverName}</span>
+                ${e.reason ? `<p class="italic text-[var(--muted)] mt-0.5 truncate">"${e.reason}"</p>` : ''}
+              </div>
+            `;
+            const isPos = e.delta > 0;
+            tagHtml = `<span class="tag ${isPos ? 'tag-accent border-[var(--border)]' : 'tag-neg border-[var(--negative)]'} font-black shrink-0 select-none">${isPos ? `Gave +${e.delta}` : `Took ${e.delta}`}</span>`;
+          }
+
+          card.innerHTML = detailsHtml + tagHtml;
+          historyList.appendChild(card);
+        });
+      }
+
+      // Show modal
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    };
+
+    // Bind global click listener on data-action="view-detail" rows
+    document.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      const memberItem = target.closest('[data-action="view-detail"]');
+      if (memberItem) {
+        const memberId = memberItem.getAttribute('data-member-id');
+        if (memberId) {
+          openModalForMember(memberId);
+        }
+      }
+    });
+  }
+</script>
