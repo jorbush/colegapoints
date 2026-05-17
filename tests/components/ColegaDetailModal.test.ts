@@ -81,4 +81,42 @@ describe('ColegaDetailModal component', () => {
     expect(result).toContain('Recent Activity');
     expect(result).toContain('id="detail-history-list"');
   });
+
+  it('renders responsive classes, animations, and truncation styling for small screens', async () => {
+    const container = await AstroContainer.create();
+    const result = await container.renderToString(ColegaDetailModal, {
+      props: {
+        members,
+        events,
+      },
+    });
+
+    // Verify outer modal container has scrolling and flexible alignment classes
+    expect(result).toContain('id="colega-detail-modal"');
+    expect(result).toContain('overflow-y-auto');
+    expect(result).toContain('flex-col');
+    expect(result).toContain('p-0');
+    expect(result).toContain('sm:p-4');
+
+    // Verify inner card matches responsive classes
+    expect(result).toContain('id="colega-detail-modal-inner"');
+    expect(result).toContain('min-h-screen');
+    expect(result).toContain('sm:min-h-0');
+    expect(result).toContain('rounded-none');
+    expect(result).toContain('sm:rounded-lg');
+    expect(result).toContain('border-0');
+    expect(result).toContain('sm:border-4');
+
+    // Check avatar bounces
+    expect(result).toContain('animate-bounce');
+    expect(result).toContain('style="animation-duration: 3s"');
+
+    // Check flexible layout for name truncation
+    expect(result).toContain('class="min-w-0 flex-1"');
+    expect(result).toContain('class="truncate text-2xl font-black tracking-tight uppercase"');
+
+    // Check mobile-optimized history height
+    expect(result).toContain('max-h-60');
+    expect(result).toContain('sm:max-h-48');
+  });
 });

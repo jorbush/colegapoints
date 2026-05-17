@@ -9,11 +9,14 @@ const { groupId, members } = Astro.props;
 
 <div
   id="points-modal"
-  class="fixed inset-0 z-50 hidden items-center justify-center bg-[rgba(0,0,0,0.8)] p-4"
+  class="fixed inset-0 z-50 hidden flex-col items-center justify-start overflow-y-auto bg-[rgba(0,0,0,0.8)] p-4 sm:justify-center"
   data-group-id={groupId}
   data-members={JSON.stringify(members)}
 >
-  <div class="card animate-pop-in relative w-full max-w-sm p-8" id="points-modal-inner">
+  <div
+    class="card animate-pop-in relative my-auto w-full max-w-sm p-8 sm:my-0"
+    id="points-modal-inner"
+  >
     <div class="mb-8 flex items-center justify-between">
       <h3 class="text-3xl font-black uppercase italic">Points</h3>
       <button id="close-modal-btn" class="btn btn-ghost h-10 w-10 text-2xl font-black">✕</button>

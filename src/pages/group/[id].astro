@@ -173,9 +173,9 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
     <!-- Leave Group Confirmation Modal -->
     <div
       id="leave-modal"
-      class="fixed inset-0 z-50 hidden items-center justify-center bg-[rgba(0,0,0,0.8)] p-4"
+      class="fixed inset-0 z-50 hidden flex-col items-center justify-start overflow-y-auto bg-[rgba(0,0,0,0.8)] p-4 sm:justify-center"
     >
-      <div class="card animate-pop-in w-full max-w-sm p-8">
+      <div class="card animate-pop-in my-auto w-full max-w-sm p-8 sm:my-0">
         <div class="mb-6 text-center text-5xl">🚪</div>
         <h3 class="mb-3 text-center text-3xl font-black uppercase italic">Leave group?</h3>
         <p class="mb-8 text-center text-base leading-tight font-bold italic">
@@ -282,10 +282,12 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
   const closeModal = () => {
     modal?.classList.add('hidden');
     modal?.classList.remove('flex');
+    document.body.style.overflow = '';
   };
   const openModal = () => {
     modal?.classList.remove('hidden');
     modal?.classList.add('flex');
+    document.body.style.overflow = 'hidden';
   };
 
   const addPointsBtn = document.getElementById('add-points-btn') as HTMLButtonElement | null;
@@ -360,11 +362,13 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
   function openLeaveModal() {
     leaveModal?.classList.remove('hidden');
     leaveModal?.classList.add('flex');
+    document.body.style.overflow = 'hidden';
   }
   function closeLeaveModal() {
     leaveModal?.classList.remove('flex');
     leaveModal?.classList.add('hidden');
     leaveErrorEl?.classList.add('hidden');
+    document.body.style.overflow = '';
   }
 
   document.getElementById('leave-group-btn')?.addEventListener('click', openLeaveModal);

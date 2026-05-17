@@ -17,16 +17,18 @@ const { members, events } = Astro.props;
 
 <div
   id="colega-detail-modal"
-  class="animate-fade-in fixed inset-0 z-50 hidden items-center justify-center bg-[rgba(0,0,0,0.8)] p-4"
+  class="animate-fade-in fixed inset-0 z-50 hidden flex-col justify-start overflow-y-auto bg-[rgba(0,0,0,0.8)] p-0 sm:items-center sm:justify-center sm:p-4"
   data-members={JSON.stringify(members)}
   data-events={JSON.stringify(events)}
 >
   <div
-    class="card animate-pop-in relative w-full max-w-md bg-[var(--surface)] p-8"
+    class="card animate-pop-in relative flex min-h-screen w-full flex-col justify-between rounded-none border-0 border-solid border-[var(--border)] bg-[var(--surface)] p-6 shadow-none sm:h-auto sm:min-h-0 sm:max-w-md sm:justify-start sm:rounded-lg sm:border-4 sm:p-8 sm:shadow-[var(--shadow)]"
     id="colega-detail-modal-inner"
   >
     <div class="mb-6 flex items-center justify-between">
-      <h3 class="text-3xl font-black tracking-tight uppercase italic">Colega Profile</h3>
+      <h3 class="text-2xl font-black tracking-tight uppercase italic sm:text-3xl">
+        Colega Profile
+      </h3>
       <button id="close-detail-modal-btn" class="btn btn-ghost h-10 w-10 text-2xl font-black"
         >✕</button
       >
@@ -38,15 +40,13 @@ const { members, events } = Astro.props;
       <div class="flex items-center gap-4 border-b-4 border-[var(--border)] pb-5">
         <div
           id="detail-avatar"
-          class="flex h-16 w-16 items-center justify-center border-4 border-[var(--border)] bg-white text-4xl shadow-[3px_3px_0px_var(--border)] select-none"
+          class="flex h-16 w-16 animate-bounce items-center justify-center border-4 border-[var(--border)] bg-white text-4xl shadow-[3px_3px_0px_var(--border)] select-none"
+          style="animation-duration: 3s"
         >
           😊
         </div>
-        <div>
-          <h4
-            id="detail-name"
-            class="max-w-[240px] truncate text-2xl font-black tracking-tight uppercase"
-          >
+        <div class="min-w-0 flex-1">
+          <h4 id="detail-name" class="truncate text-2xl font-black tracking-tight uppercase">
             Name
           </h4>
           <p id="detail-joined" class="text-xs font-bold text-[var(--muted)] italic">Joined Date</p>
@@ -54,7 +54,7 @@ const { members, events } = Astro.props;
       </div>
 
       <!-- Point Display & Rank -->
-      <div class="grid grid-cols-2 gap-4">
+      <div class="grid grid-cols-2 gap-3 sm:gap-4">
         <div
           class="card border-4 border-[var(--border)] bg-white p-4 text-center shadow-[3px_3px_0px_var(--border)]"
         >
@@ -116,7 +116,10 @@ const { members, events } = Astro.props;
         <label class="mb-2 block text-xs font-black tracking-wider text-[var(--muted)] uppercase"
           >Recent Activity</label
         >
-        <div id="detail-history-list" class="flex max-h-48 flex-col gap-2 overflow-y-auto pr-1">
+        <div
+          id="detail-history-list"
+          class="flex max-h-60 flex-col gap-2 overflow-y-auto pr-1 sm:max-h-48"
+        >
           <!-- Populated by script -->
         </div>
       </div>
@@ -133,6 +136,7 @@ const { members, events } = Astro.props;
     const closeModal = () => {
       modal.classList.add('hidden');
       modal.classList.remove('flex');
+      document.body.style.overflow = '';
     };
 
     modal.querySelector('#close-detail-modal-btn')?.addEventListener('click', closeModal);
@@ -274,6 +278,7 @@ const { members, events } = Astro.props;
       // Show modal
       modal.classList.remove('hidden');
       modal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
     };
 
     // Bind global click listener on data-action="view-detail" rows

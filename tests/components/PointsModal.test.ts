@@ -41,4 +41,20 @@ describe('PointsModal component', () => {
     expect(result).toContain('data-delta="3"');
     expect(result).toContain('data-delta="5"');
   });
+
+  it('renders with scrollable and center alignment classes', async () => {
+    const container = await AstroContainer.create();
+    const result = await container.renderToString(PointsModal, {
+      props: {
+        groupId: 'g1',
+        members,
+      },
+    });
+
+    expect(result).toContain('id="points-modal"');
+    expect(result).toContain('overflow-y-auto');
+    expect(result).toContain('flex-col');
+    expect(result).toContain('my-auto');
+    expect(result).toContain('sm:my-0');
+  });
 });

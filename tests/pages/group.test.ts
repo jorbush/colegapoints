@@ -77,4 +77,23 @@ describe('Group Detail Page', () => {
     );
     expect(result).not.toContain('title="Add more members to give or take points"');
   });
+
+  it('renders the leave group modal with scrollable and center alignment classes', async () => {
+    (db.query.members.findMany as any).mockResolvedValue([
+      { id: 'm1', name: 'Alice', avatarEmoji: '😎', joinedAt: new Date() },
+    ]);
+
+    const container = await AstroContainer.create();
+    const result = await container.renderToString(GroupPage, {
+      params: { id: 'g1' },
+      request: new Request('http://localhost/group/g1'),
+    });
+
+    // Check leave modal outer container responsive classes
+    expect(result).toContain('id="leave-modal"');
+    expect(result).toContain('overflow-y-auto');
+    expect(result).toContain('flex-col');
+    expect(result).toContain('my-auto');
+    expect(result).toContain('sm:my-0');
+  });
 });
