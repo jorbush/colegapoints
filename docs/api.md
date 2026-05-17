@@ -124,3 +124,61 @@ Subscribe to push notifications for a group.
   "success": true
 }
 ```
+
+---
+
+## Syncing
+
+### `POST /api/sync/create`
+
+Generate a short-lived sync code for a member of a group. The code is active for 10 minutes.
+
+**Body:**
+
+```json
+{
+  "groupId": "abc123xy",
+  "memberId": "mem_xyz123"
+}
+```
+
+**Response (201 Created):**
+
+```json
+{
+  "code": "AB12XY"
+}
+```
+
+### `POST /api/sync/redeem`
+
+Redeem a sync code to transfer membership data to a new browser session. Redeeming deletes the code so it is one-time use only.
+
+**Body:**
+
+```json
+{
+  "code": "AB12XY"
+}
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "member": {
+    "id": "mem_xyz123",
+    "groupId": "abc123xy",
+    "name": "Ash",
+    "avatarEmoji": "⚡️",
+    "pushSubscription": null,
+    "joinedAt": "2026-05-17T10:00:00.000Z"
+  },
+  "group": {
+    "id": "abc123xy",
+    "name": "Team Rocket",
+    "description": "Blasting off at the speed of light",
+    "createdAt": "2026-05-17T09:00:00.000Z"
+  }
+}
+```
