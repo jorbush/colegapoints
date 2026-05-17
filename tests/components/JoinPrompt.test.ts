@@ -32,5 +32,6 @@ describe('JoinPrompt component', () => {
     expect(result).toContain('data-emoji="😎"');
     expect(result).toContain('data-emoji="🚀"');
     expect(result).toContain('data-emoji="🍕"');
+    expect(result).toContain('data-emoji="🍍"');
   });
 });
