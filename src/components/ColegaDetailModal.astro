@@ -17,12 +17,12 @@ const { members, events } = Astro.props;
 
 <div
   id="colega-detail-modal"
-  class="animate-fade-in fixed inset-0 z-50 hidden flex-col justify-start overflow-y-auto bg-[rgba(0,0,0,0.8)] p-0 sm:items-center sm:justify-center sm:p-4"
+  class="animate-fade-in fixed inset-0 z-50 overflow-y-auto bg-[rgba(0,0,0,0.8)] p-0 sm:flex sm:flex-col sm:items-center sm:justify-center sm:p-4"
   data-members={JSON.stringify(members)}
   data-events={JSON.stringify(events)}
 >
   <div
-    class="card animate-pop-in relative flex min-h-screen w-full flex-col justify-start rounded-none border-0 border-solid border-[var(--border)] bg-[var(--surface)] px-6 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-none sm:h-auto sm:min-h-0 sm:max-w-md sm:justify-start sm:rounded-lg sm:border-4 sm:p-8 sm:shadow-[var(--shadow)]"
+    class="card animate-pop-in relative flex min-h-dvh w-full flex-col justify-start rounded-none border-0 border-solid border-[var(--border)] bg-[var(--surface)] px-6 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-none sm:h-auto sm:min-h-0 sm:max-w-md sm:justify-start sm:rounded-lg sm:border-4 sm:p-8 sm:shadow-[var(--shadow)]"
     id="colega-detail-modal-inner"
   >
     <div class="mb-6 flex items-center justify-between">
@@ -134,8 +134,7 @@ const { members, events } = Astro.props;
     const events = JSON.parse(modal.dataset.events!) as any[];
 
     const closeModal = () => {
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
+      modal.classList.remove('open');
       document.body.style.overflow = '';
     };
 
@@ -276,8 +275,7 @@ const { members, events } = Astro.props;
       }
 
       // Show modal
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
+      modal.classList.add('open');
       document.body.style.overflow = 'hidden';
     };
 

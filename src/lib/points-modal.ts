@@ -6,8 +6,7 @@ export function initPointsModal(modal: HTMLElement) {
   const members = JSON.parse(modal.dataset.members!) as any[];
 
   const closeModal = () => {
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
+    modal.classList.remove('open');
   };
 
   // ── Target selection ────────────────────────────────────────────────────────

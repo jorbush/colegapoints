@@ -100,12 +100,14 @@ describe('ColegaDetailModal component', () => {
 
     // Verify inner card matches responsive classes
     expect(result).toContain('id="colega-detail-modal-inner"');
-    expect(result).toContain('min-h-screen');
+    expect(result).toContain('min-h-dvh');
     expect(result).toContain('sm:min-h-0');
     expect(result).toContain('rounded-none');
     expect(result).toContain('sm:rounded-lg');
     expect(result).toContain('border-0');
     expect(result).toContain('sm:border-4');
+    expect(result).toContain('safe-area-inset-top');
+    expect(result).toContain('safe-area-inset-bottom');
 
     // Check avatar bounces
     expect(result).toContain('animate-bounce');

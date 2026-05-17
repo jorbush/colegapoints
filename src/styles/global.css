@@ -294,3 +294,9 @@ button {
 .input {
   cursor: text;
 }
+
+/* ── Modal toggles ────────────────────────────────────────────────────────── */
+#points-modal:not(.open),
+#colega-detail-modal:not(.open) {
+  display: none !important;
+}
