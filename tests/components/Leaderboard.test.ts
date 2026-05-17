@@ -50,4 +50,19 @@ describe('Leaderboard component', () => {
     // Should not contain member names
     expect(result).not.toContain('Alice');
   });
+
+  it('renders responsive wrapper layout to prevent top colega badge from squeezing name', async () => {
+    const container = await AstroContainer.create();
+    const result = await container.renderToString(Leaderboard, {
+      props: { members, pointTotals },
+    });
+
+    // Check that we have the flex-wrap class on the member content wrapper
+    expect(result).toContain('flex flex-wrap items-center');
+    // Check that we have the responsive gap values and sizes
+    expect(result).toContain('gap-3 sm:gap-5');
+    // Check that the top colega tag is rendered
+    expect(result).toContain('tag tag-brand');
+    expect(result).toContain('Top Colega');
+  });
 });

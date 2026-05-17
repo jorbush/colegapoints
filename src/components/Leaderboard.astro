@@ -42,26 +42,28 @@ const sorted = [...members].sort((a, b) => (pointTotals[b.id] ?? 0) - (pointTota
           return (
             <li
               id={`member-${m.id}`}
-              class={`card animate-slide-up flex items-center gap-5 p-5 ${isTop ? 'bg-[var(--accent-light)]' : ''}`}
+              class={`card animate-slide-up flex items-center gap-3 p-4 sm:gap-5 sm:p-5 ${isTop ? 'bg-[var(--accent-light)]' : ''}`}
               data-member-id={m.id}
             >
-              <div class="flex h-16 w-16 flex-shrink-0 items-center justify-center border-4 border-[var(--border)] bg-white text-4xl shadow-[3px_3px_0px_var(--border)]">
+              <div class="flex h-14 w-14 flex-shrink-0 items-center justify-center border-4 border-[var(--border)] bg-white text-3xl shadow-[3px_3px_0px_var(--border)] sm:h-16 sm:w-16 sm:text-4xl">
                 {m.avatarEmoji}
               </div>
               <div class="min-w-0 flex-1">
-                <div class="flex items-center gap-2">
-                  <span class="truncate text-2xl font-black tracking-tight uppercase">
+                <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <span class="max-w-full truncate text-xl font-black tracking-tight uppercase sm:text-2xl">
                     {m.name}
                   </span>
-                  {medal && <span class="text-xl">{medal}</span>}
-                  {isTop && <span class="tag tag-brand ml-2">Top Colega</span>}
+                  <div class="flex flex-shrink-0 items-center gap-1.5">
+                    {medal && <span class="text-xl">{medal}</span>}
+                    {isTop && <span class="tag tag-brand">Top Colega</span>}
+                  </div>
                 </div>
                 <div class="mt-1 text-sm font-bold italic">
                   Joined {new Date(m.joinedAt).toLocaleDateString()}
                 </div>
               </div>
               <div
-                class={`border-4 border-[var(--border)] px-4 py-2 text-4xl font-black tabular-nums shadow-[3px_3px_0px_var(--border)] ${pts > 0 ? 'bg-[var(--positive-bg)] text-[var(--positive)]' : pts < 0 ? 'bg-[var(--negative-bg)] text-[var(--negative)]' : 'bg-white text-[var(--muted)]'}`}
+                class={`border-4 border-[var(--border)] px-2.5 py-1 text-2xl font-black tabular-nums shadow-[3px_3px_0px_var(--border)] sm:px-4 sm:py-2 sm:text-4xl ${pts > 0 ? 'bg-[var(--positive-bg)] text-[var(--positive)]' : pts < 0 ? 'bg-[var(--negative-bg)] text-[var(--negative)]' : 'bg-white text-[var(--muted)]'}`}
               >
                 {pts > 0 ? `+${formatPoints(pts)}` : formatPoints(pts)}
               </div>
