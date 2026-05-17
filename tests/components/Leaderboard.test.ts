@@ -22,6 +22,24 @@ describe('Leaderboard component', () => {
     expect(result).toMatch(/\+\s*5/);
   });
 
+  it('renders abbreviated large point totals on the leaderboard', async () => {
+    const container = await AstroContainer.create();
+    const result = await container.renderToString(Leaderboard, {
+      props: {
+        members: [
+          { id: '1', name: 'Alice', avatarEmoji: '😎', joinedAt: new Date() },
+          { id: '2', name: 'Bob', avatarEmoji: '🤓', joinedAt: new Date() },
+        ],
+        pointTotals: { '1': 1000, '2': -1500000 },
+      },
+    });
+
+    expect(result).toContain('Alice');
+    expect(result).toContain('+1K');
+    expect(result).toContain('Bob');
+    expect(result).toContain('-1.5M');
+  });
+
   it('renders correctly with no members', async () => {
     const container = await AstroContainer.create();
     const result = await container.renderToString(Leaderboard, {

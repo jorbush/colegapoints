@@ -1,4 +1,6 @@
 ---
+import { formatPoints } from '../lib/points';
+
 interface Member {
   id: string;
   name: string;
@@ -61,8 +63,7 @@ const sorted = [...members].sort((a, b) => (pointTotals[b.id] ?? 0) - (pointTota
               <div
                 class={`border-4 border-[var(--border)] px-4 py-2 text-4xl font-black tabular-nums shadow-[3px_3px_0px_var(--border)] ${pts > 0 ? 'bg-[var(--positive-bg)] text-[var(--positive)]' : pts < 0 ? 'bg-[var(--negative-bg)] text-[var(--negative)]' : 'bg-white text-[var(--muted)]'}`}
               >
-                {pts > 0 ? '+' : ''}
-                {pts}
+                {pts > 0 ? `+${formatPoints(pts)}` : formatPoints(pts)}
               </div>
             </li>
           );

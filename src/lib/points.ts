@@ -38,3 +38,27 @@ export function calculatePointTotals(
 export function sortMembersByPoints(members: Member[], totals: Record<string, number>): Member[] {
   return [...members].sort((a, b) => (totals[b.id] ?? 0) - (totals[a.id] ?? 0));
 }
+
+/**
+ * Formats a point total/delta to be concise, abbreviating large numbers (e.g. 1K, 1.5M, 2B).
+ */
+export function formatPoints(points: number): string {
+  const abs = Math.abs(points);
+  const sign = points < 0 ? '-' : '';
+
+  if (abs < 1000) {
+    return `${sign}${abs}`;
+  }
+
+  // Define thresholds based on the rounded value to prevent "1000K", "1000M", etc.
+  if (abs < 999950) {
+    const formatted = parseFloat((abs / 1000).toFixed(1));
+    return `${sign}${formatted}K`;
+  }
+  if (abs < 999950000) {
+    const formatted = parseFloat((abs / 1000000).toFixed(1));
+    return `${sign}${formatted}M`;
+  }
+  const formatted = parseFloat((abs / 1000000000).toFixed(1));
+  return `${sign}${formatted}B`;
+}
