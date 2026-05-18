@@ -1,0 +1,37 @@
+---
+import pkg from '../../package.json';
+const version = pkg.version;
+const versionUrl = `https://github.com/jorbush/colegapoints/releases/tag/v${version}`;
+const githubProfileUrl = 'https://github.com/jorbush';
+---
+
+<footer
+  class="mt-auto w-full border-[var(--border)] border-t-[var(--bw)] bg-[var(--surface)] px-4 py-6"
+>
+  <div
+    class="mx-auto flex max-w-lg flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left"
+  >
+    <div class="text-sm font-bold text-[var(--text)]">
+      Created by{' '}
+      <a
+        href={githubProfileUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="font-black underline decoration-[var(--accent)] decoration-2 underline-offset-2 transition-colors hover:text-[var(--brand)]"
+      >
+        jorbush
+      </a>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <a
+        href={versionUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="tag tag-accent inline-flex items-center gap-1.5 transition-transform hover:translate-x-0.5 hover:-translate-y-0.5"
+      >
+        <span>v{version}</span>
+      </a>
+    </div>
+  </div>
+</footer>
