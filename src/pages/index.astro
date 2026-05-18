@@ -1,8 +1,12 @@
 ---
 import Base from '../layouts/Base.astro';
+import { getLocale, useTranslation } from '../lib/i18n';
+
+const locale = getLocale(Astro.cookies, Astro.request.headers);
+const t = useTranslation(locale);
 ---
 
-<Base title="Home">
+<Base title={t('home.title')}>
   <main class="mx-auto flex max-w-lg flex-col gap-10 px-4 py-16">
     <!-- Logo / Hero -->
     <header class="animate-slide-up text-center">
@@ -16,7 +20,7 @@ import Base from '../layouts/Base.astro';
         Colega<span class="text-[var(--brand)]">Points</span>
       </h1>
       <p class="mx-auto max-w-xs text-xl leading-tight font-bold italic">
-        The scoreboard your friend group actually deserves.
+        {t('home.hero_subtitle')}
       </p>
     </header>
 
@@ -25,7 +29,7 @@ import Base from '../layouts/Base.astro';
       <h2
         class="mb-3 inline-block border-2 border-[var(--border)] bg-[var(--accent)] px-2 text-sm font-black tracking-widest uppercase"
       >
-        Your Groups
+        {t('home.your_groups')}
       </h2>
       <ul id="your-groups-list" class="stagger flex flex-col gap-4">
         <!-- injected by JS -->
@@ -35,36 +39,39 @@ import Base from '../layouts/Base.astro';
     <!-- Divider (shown only when groups exist) -->
     <div id="divider" class="flex hidden items-center gap-3">
       <div class="h-1 flex-1 bg-[var(--border)]"></div>
-      <span class="text-sm font-black tracking-widest uppercase">or start fresh</span>
+      <span class="text-sm font-black tracking-widest uppercase">{t('home.or_start_fresh')}</span>
       <div class="h-1 flex-1 bg-[var(--border)]"></div>
     </div>
 
     <!-- Create group card -->
     <section class="card animate-slide-up w-full p-8" style="animation-delay:150ms">
       <h2 class="mb-6 flex items-center gap-2 text-2xl font-black uppercase italic">
-        <span>🎉</span> Start a new group
+        <span>🎉</span>
+        {t('home.start_new_group')}
       </h2>
       <form id="create-group-form" class="flex flex-col gap-5">
         <div class="flex flex-col gap-1">
-          <label for="group-name" class="text-sm font-black uppercase">Group name *</label>
+          <label for="group-name" class="text-sm font-black uppercase">{t('home.group_name')}</label
+          >
           <input
             id="group-name"
             name="name"
             type="text"
             required
-            placeholder="e.g. The Gang, Squad Goals…"
+            placeholder={t('home.group_name_placeholder')}
             maxlength="50"
             class="input"
           />
         </div>
         <div class="flex flex-col gap-1">
-          <label for="group-desc" class="text-sm font-black uppercase">Description (optional)</label
+          <label for="group-desc" class="text-sm font-black uppercase"
+            >{t('home.group_description')}</label
           >
           <input
             id="group-desc"
             name="description"
             type="text"
-            placeholder="What's this crew about?"
+            placeholder={t('home.group_description_placeholder')}
             maxlength="120"
             class="input"
           />
@@ -74,7 +81,7 @@ import Base from '../layouts/Base.astro';
           type="submit"
           class="btn btn-primary mt-2 w-full py-4 text-xl uppercase italic"
         >
-          Create Group →
+          {t('home.create_group')}
         </button>
       </form>
       <p
@@ -87,21 +94,22 @@ import Base from '../layouts/Base.astro';
     <!-- Sync / Import section -->
     <section class="card animate-slide-up w-full p-8" style="animation-delay:150ms">
       <h2 class="mb-4 flex items-center gap-2 text-2xl font-black uppercase italic">
-        <span>🔄</span> Sync existing group
+        <span>🔄</span>
+        {t('home.sync_existing_group')}
       </h2>
       <p class="mb-6 text-sm font-bold text-[var(--muted)] italic">
-        Enter a sync code from your browser to move your profile here.
+        {t('home.sync_hint')}
       </p>
       <div class="flex gap-2">
         <input
           id="sync-code-input"
           type="text"
-          placeholder="e.g. AB12XY"
+          placeholder={t('home.sync_placeholder')}
           maxlength="6"
           class="input flex-1 tracking-widest uppercase"
         />
         <button id="sync-redeem-btn" class="btn btn-primary px-6 py-4 uppercase italic">
-          Sync
+          {t('home.sync_button')}
         </button>
       </div>
       <p
@@ -113,7 +121,7 @@ import Base from '../layouts/Base.astro';
 
     <!-- Invite hint -->
     <p class="animate-fade-in text-center text-sm font-bold" style="animation-delay:300ms">
-      Got an invite link? Just open it — you'll join automatically. 🔗
+      {t('home.invite_hint')}
     </p>
   </main>
 </Base>
@@ -121,6 +129,10 @@ import Base from '../layouts/Base.astro';
 <script>
   import { storage } from '../lib/storage';
   import { createGroup, redeemSyncCode } from '../lib/api';
+  import { getClientLocale, useTranslation } from '../lib/i18n';
+
+  const locale = getClientLocale();
+  const t = useTranslation(locale);
 
   function renderGroups() {
     const groups = storage.getGroups();
@@ -154,7 +166,7 @@ import Base from '../layouts/Base.astro';
             </div>
             ${g.groupDescription ? `<div class="text-sm font-bold text-[var(--muted)] truncate mt-0.5 italic">${g.groupDescription}</div>` : ''}
             <div class="mt-2">
-              <span class="tag tag-accent">You: ${g.memberName}</span>
+              <span class="tag tag-accent">${t('home.you', { name: g.memberName })}</span>
             </div>
           </div>
           <!-- Arrow -->
@@ -177,7 +189,7 @@ import Base from '../layouts/Base.astro';
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
     btn.disabled = true;
-    btn.textContent = 'Creating…';
+    btn.textContent = t('home.creating');
     errorEl.classList.add('hidden');
 
     const data = new FormData(form);
@@ -190,7 +202,7 @@ import Base from '../layouts/Base.astro';
       errorEl.textContent = err.message;
       errorEl.classList.remove('hidden');
       btn.disabled = false;
-      btn.textContent = 'Create Group →';
+      btn.textContent = t('home.create_group');
     }
   });
 
@@ -216,7 +228,7 @@ import Base from '../layouts/Base.astro';
       syncError.textContent = err.message;
       syncError.classList.remove('hidden');
       syncBtn.disabled = false;
-      syncBtn.textContent = 'Sync';
+      syncBtn.textContent = t('home.sync_button');
     }
   });
 </script>

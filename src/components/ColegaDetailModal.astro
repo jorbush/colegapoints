@@ -1,5 +1,9 @@
 ---
 import { AVAILABLE_EMOJIS } from '../lib/constants';
+import { getLocale, useTranslation } from '../lib/i18n';
+
+const locale = getLocale(Astro.cookies, Astro.request.headers);
+const t = useTranslation(locale);
 
 interface Props {
   members: { id: string; name: string; avatarEmoji: string; joinedAt: number | Date | string }[];
@@ -29,7 +33,7 @@ const { members, events } = Astro.props;
   >
     <div class="mb-6 flex items-center justify-between">
       <h3 class="text-2xl font-black tracking-tight uppercase italic sm:text-3xl">
-        Colega Profile
+        {t('profile.title')}
       </h3>
       <button id="close-detail-modal-btn" class="btn btn-ghost h-10 w-10 text-2xl font-black"
         >✕</button
@@ -59,7 +63,7 @@ const { members, events } = Astro.props;
               id="edit-profile-btn"
               class="btn btn-ghost h-8 border-2 border-[var(--border)] px-2 py-0.5 text-xs font-black tracking-wider uppercase shadow-[1px_1px_0px_var(--border)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
               style="display: none;"
-              type="button">Edit</button
+              type="button">{t('profile.edit')}</button
             >
           </div>
           <p id="detail-joined" class="text-xs font-bold text-[var(--muted)] italic">Joined Date</p>
@@ -73,13 +77,19 @@ const { members, events } = Astro.props;
       >
         <div>
           <label class="mb-1 block text-xs font-black tracking-wider text-[var(--muted)] uppercase"
-            >Your name</label
+            >{t('profile.name_label')}</label
           >
-          <input id="edit-name" type="text" placeholder="Name" maxlength="30" class="input" />
+          <input
+            id="edit-name"
+            type="text"
+            placeholder={t('profile.name_placeholder')}
+            maxlength="30"
+            class="input"
+          />
         </div>
         <div>
           <label class="mb-2 block text-xs font-black tracking-wider text-[var(--muted)] uppercase"
-            >Pick your emoji</label
+            >{t('profile.emoji_label')}</label
           >
           <div id="edit-emoji-picker" class="flex flex-wrap gap-2">
             {
@@ -97,10 +107,10 @@ const { members, events } = Astro.props;
         </div>
         <div class="flex gap-3">
           <button id="save-profile-btn" class="btn btn-primary flex-1 py-2 text-sm uppercase italic"
-            >Save</button
+            >{t('profile.save')}</button
           >
           <button id="cancel-profile-btn" class="btn btn-ghost flex-1 py-2 text-sm uppercase"
-            >Cancel</button
+            >{t('profile.cancel')}</button
           >
         </div>
         <p
@@ -116,7 +126,7 @@ const { members, events } = Astro.props;
           class="card border-4 border-[var(--border)] bg-white p-4 text-center shadow-[3px_3px_0px_var(--border)]"
         >
           <p class="text-xs font-black tracking-wider text-[var(--muted)] uppercase">
-            Exact Points
+            {t('profile.exact_points')}
           </p>
           <p
             id="detail-points"
@@ -128,7 +138,9 @@ const { members, events } = Astro.props;
         <div
           class="card border-4 border-[var(--border)] bg-white p-4 text-center shadow-[3px_3px_0px_var(--border)]"
         >
-          <p class="text-xs font-black tracking-wider text-[var(--muted)] uppercase">Squad Rank</p>
+          <p class="text-xs font-black tracking-wider text-[var(--muted)] uppercase">
+            {t('profile.squad_rank')}
+          </p>
           <p id="detail-rank" class="mt-2 text-3xl font-black">#1</p>
         </div>
       </div>
@@ -136,31 +148,31 @@ const { members, events } = Astro.props;
       <!-- Statistics Section -->
       <div>
         <label class="mb-2 block text-xs font-black tracking-wider text-[var(--muted)] uppercase"
-          >Statistics</label
+          >{t('profile.statistics')}</label
         >
         <div
           class="flex flex-col gap-2 rounded-lg border-4 border-[var(--border)] bg-[var(--surface-alt)] p-4 text-sm font-bold shadow-[3px_3px_0px_var(--border)]"
         >
           <div class="flex items-center justify-between">
-            <span>⭐ Points Received:</span>
+            <span>{t('profile.stat_received')}</span>
             <span id="stat-points-received" class="font-black text-[var(--positive)]">+0</span>
           </div>
           <div class="flex items-center justify-between">
-            <span>💔 Points Deducted:</span>
+            <span>{t('profile.stat_deducted')}</span>
             <span id="stat-points-deducted" class="font-black text-[var(--negative)]">-0</span>
           </div>
           <hr class="my-1 border-t-2 border-dashed border-[var(--border)]" />
           <div class="flex items-center justify-between">
-            <span>📤 Points Given to others:</span>
+            <span>{t('profile.stat_given')}</span>
             <span id="stat-points-given" class="font-black">0</span>
           </div>
           <div class="flex items-center justify-between">
-            <span>📥 Points Taken from others:</span>
+            <span>{t('profile.stat_taken')}</span>
             <span id="stat-points-taken" class="font-black">0</span>
           </div>
           <hr class="my-1 border-t-2 border-dashed border-[var(--border)]" />
           <div class="flex items-center justify-between text-xs text-[var(--muted)] italic">
-            <span>🔄 Total Interactions:</span>
+            <span>{t('profile.stat_interactions')}</span>
             <span id="stat-total-interactions" class="font-black text-[var(--text)] not-italic"
               >0</span
             >
@@ -171,7 +183,7 @@ const { members, events } = Astro.props;
       <!-- Recent History Section -->
       <div>
         <label class="mb-2 block text-xs font-black tracking-wider text-[var(--muted)] uppercase"
-          >Recent Activity</label
+          >{t('activity.title')}</label
         >
         <div
           id="detail-history-list"
@@ -187,6 +199,10 @@ const { members, events } = Astro.props;
 <script>
   import { storage } from '../lib/storage';
   import { updateMember } from '../lib/api';
+  import { getClientLocale, useTranslation } from '../lib/i18n';
+
+  const locale = getClientLocale();
+  const t = useTranslation(locale);
 
   const modal = document.getElementById('colega-detail-modal') as HTMLElement;
   if (modal) {
@@ -245,7 +261,7 @@ const { members, events } = Astro.props;
 
       const joinedEl = modal.querySelector('#detail-joined')!;
       const joinedDate = new Date(member.joinedAt);
-      joinedEl.textContent = `Joined ${joinedDate.toLocaleDateString()}`;
+      joinedEl.textContent = t('profile.joined', { date: joinedDate.toLocaleDateString(locale) });
 
       // Show edit button if it's the current user
       const groupId =
@@ -302,13 +318,13 @@ const { members, events } = Astro.props;
         const name = nameInput.value.trim();
 
         if (!name) {
-          errorEl.textContent = 'Name is required!';
+          errorEl.textContent = t('profile.name_required');
           errorEl.classList.remove('hidden');
           return;
         }
 
         saveBtn.disabled = true;
-        saveBtn.textContent = 'Saving…';
+        saveBtn.textContent = t('profile.saving');
         errorEl.classList.add('hidden');
 
         try {
@@ -337,7 +353,7 @@ const { members, events } = Astro.props;
           errorEl.textContent = err.message;
           errorEl.classList.remove('hidden');
           saveBtn.disabled = false;
-          saveBtn.textContent = 'Save';
+          saveBtn.textContent = t('profile.save');
         }
       };
 
@@ -413,7 +429,7 @@ const { members, events } = Astro.props;
       if (memberEvents.length === 0) {
         historyList.innerHTML = `
           <div class="text-center py-6 text-sm font-bold text-[var(--muted)] italic">
-            No point activity yet.
+            ${t('profile.no_activity')}
           </div>
         `;
       } else {
@@ -434,7 +450,7 @@ const { members, events } = Astro.props;
             // Received points
             detailsHtml = `
               <div class="min-w-0 flex-1">
-                <span class="font-black">From ${giverName}</span>
+                <span class="font-black">${t('profile.history_received', { name: giverName })}</span>
                 ${e.reason ? `<p class="italic text-[var(--muted)] mt-0.5 truncate">"${e.reason}"</p>` : ''}
               </div>
             `;
@@ -444,12 +460,15 @@ const { members, events } = Astro.props;
             // Sent/gave/took points
             detailsHtml = `
               <div class="min-w-0 flex-1">
-                <span class="font-black">To ${receiverName}</span>
+                <span class="font-black">${t('profile.history_sent', { name: receiverName })}</span>
                 ${e.reason ? `<p class="italic text-[var(--muted)] mt-0.5 truncate">"${e.reason}"</p>` : ''}
               </div>
             `;
             const isPos = e.delta > 0;
-            tagHtml = `<span class="tag ${isPos ? 'tag-accent border-[var(--border)]' : 'tag-neg border-[var(--negative)]'} font-black shrink-0 select-none">${isPos ? `Gave +${e.delta}` : `Took ${e.delta}`}</span>`;
+            const tagText = isPos
+              ? t('profile.history_gave_tag', { delta: e.delta })
+              : t('profile.history_took_tag', { delta: e.delta });
+            tagHtml = `<span class="tag ${isPos ? 'tag-accent border-[var(--border)]' : 'tag-neg border-[var(--negative)]'} font-black shrink-0 select-none">${tagText}</span>`;
           }
 
           card.innerHTML = detailsHtml + tagHtml;

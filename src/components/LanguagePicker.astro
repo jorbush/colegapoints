@@ -1,0 +1,48 @@
+---
+import { getLocale, locales } from '../lib/i18n';
+
+const currentLocale = getLocale(Astro.cookies, Astro.request.headers);
+---
+
+<div class="language-picker flex items-center gap-1.5" data-current-lang={currentLocale}>
+  {
+    locales.map((locale) => {
+      const isActive = locale === currentLocale;
+      const label = locale === 'en' ? 'English' : locale === 'es' ? 'Español' : 'Català';
+      return (
+        <button
+          type="button"
+          data-lang={locale}
+          class={`lang-btn tag transition-all duration-100 ${
+            isActive
+              ? 'tag-brand scale-105 shadow-[1px_1px_0px_var(--border)]'
+              : 'bg-white text-[var(--muted)] hover:-translate-y-0.5 hover:text-[var(--text)] hover:shadow-[1px_1px_0px_var(--border)]'
+          }`}
+          aria-label={`Change language to ${label}`}
+          aria-pressed={isActive ? 'true' : 'false'}
+        >
+          {locale.toUpperCase()}
+        </button>
+      );
+    })
+  }
+</div>
+
+<script>
+  const picker = document.querySelector('.language-picker');
+  if (picker) {
+    const btns = picker.querySelectorAll('.lang-btn');
+    btns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const lang = (btn as HTMLElement).dataset.lang;
+        if (!lang) return;
+
+        // Save choice in cookie (1 year expiration)
+        document.cookie = `lang=${lang}; path=/; max-age=31536000; SameSite=Lax`;
+
+        // Reload page to apply changes
+        window.location.reload();
+      });
+    });
+  }
+</script>

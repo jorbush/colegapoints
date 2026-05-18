@@ -1,5 +1,9 @@
 import { storage } from './storage';
 import { sendPoints } from './api';
+import { getClientLocale, useTranslation } from './i18n';
+
+const locale = getClientLocale();
+const t = useTranslation(locale);
 
 export function initPointsModal(modal: HTMLElement) {
   const groupId = modal.dataset.groupId!;
@@ -73,19 +77,19 @@ export function initPointsModal(modal: HTMLElement) {
     const errorEl = modal.querySelector('#points-error') as HTMLElement;
 
     if (selectedTargetIds.length === 0) {
-      errorEl.textContent = 'Select a member!';
+      errorEl.textContent = t('modal.error_select_member');
       errorEl.classList.remove('hidden');
       return;
     }
     if (!delta || delta === 0) {
-      errorEl.textContent = 'Pick or enter points!';
+      errorEl.textContent = t('modal.error_pick_points');
       errorEl.classList.remove('hidden');
       return;
     }
 
     const btn = modal.querySelector('#submit-points-btn') as HTMLButtonElement;
     btn.disabled = true;
-    btn.textContent = 'Sending…';
+    btn.textContent = t('modal.sending');
 
     try {
       await sendPoints(groupId, {
@@ -100,7 +104,7 @@ export function initPointsModal(modal: HTMLElement) {
       errorEl.textContent = err.message;
       errorEl.classList.remove('hidden');
       btn.disabled = false;
-      btn.textContent = 'Send Points ⭐';
+      btn.textContent = t('modal.submit');
     }
   });
 

@@ -9,6 +9,10 @@ import RecentActivity from '../../components/RecentActivity.astro';
 import JoinPrompt from '../../components/JoinPrompt.astro';
 import PointsModal from '../../components/PointsModal.astro';
 import ColegaDetailModal from '../../components/ColegaDetailModal.astro';
+import { getLocale, useTranslation } from '../../lib/i18n';
+
+const locale = getLocale(Astro.cookies, Astro.request.headers);
+const t = useTranslation(locale);
 
 const { id } = Astro.params;
 if (!id) return Astro.redirect('/');
@@ -48,26 +52,26 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
           href="/"
           class="inline-flex shrink-0 items-center gap-1 border-2 border-[var(--border)] bg-[var(--accent)] px-2 py-0.5 text-sm font-black tracking-widest uppercase transition-colors hover:text-[var(--brand)]"
         >
-          ← Home
+          ← {t('home.title')}
         </a>
         <div class="flex shrink-0 flex-wrap justify-end gap-1.5 sm:gap-3">
           <button
             id="copy-invite-btn"
             class="btn btn-ghost px-2 py-1.5 text-[10px] uppercase italic sm:px-4 sm:py-2 sm:text-sm"
           >
-            🔗 Invite
+            {t('group.invite')}
           </button>
           <a
             href={`/group/${id}/history`}
             class="btn btn-ghost px-2 py-1.5 text-[10px] uppercase italic sm:px-4 sm:py-2 sm:text-sm"
           >
-            📜 History
+            {t('group.history')}
           </a>
           <button
             id="leave-group-btn"
             class="btn btn-outline hidden border-[var(--negative)] px-2 py-1.5 text-[10px] text-[var(--negative)] uppercase italic hover:bg-[var(--negative-bg)] sm:px-4 sm:py-2 sm:text-sm"
           >
-            🚪 Leave
+            {t('group.leave')}
           </button>
         </div>
       </div>
@@ -91,9 +95,9 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
         id="add-points-btn"
         class="btn btn-primary w-full py-6 text-3xl uppercase italic shadow-lg"
         disabled={groupMembers.length === 1}
-        title={groupMembers.length === 1 ? 'Add more members to give or take points' : undefined}
+        title={groupMembers.length === 1 ? t('group.give_take_tooltip') : undefined}
       >
-        ⭐ Give / Take Points
+        {t('group.give_take_points')}
       </button>
     </div>
 
@@ -115,16 +119,16 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
     >
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p class="text-lg leading-none font-black uppercase">📱 Sync to App</p>
+          <p class="text-lg leading-none font-black uppercase">{t('group.sync_to_app')}</p>
           <p class="mt-1 text-sm font-bold text-[var(--muted)] italic">
-            Move this group to your installed app
+            {t('group.sync_desc')}
           </p>
         </div>
         <button
           id="sync-gen-btn"
           class="btn btn-primary px-6 py-2 text-sm uppercase italic shadow-sm"
         >
-          Get Sync Code
+          {t('group.get_sync_code')}
         </button>
       </div>
 
@@ -133,7 +137,7 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
         id="sync-code-container"
         class="mt-4 hidden border-2 border-[var(--border)] bg-white p-4 text-center shadow-[4px_4px_0px_var(--border)]"
       >
-        <p class="mb-2 text-xs font-black tracking-widest uppercase">Your Sync Code</p>
+        <p class="mb-2 text-xs font-black tracking-widest uppercase">{t('group.your_sync_code')}</p>
         <div
           id="sync-code-text"
           class="text-4xl font-black tracking-widest text-[var(--brand)] uppercase"
@@ -141,10 +145,10 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
           ------
         </div>
         <p class="mt-3 text-[10px] font-bold text-[var(--muted)] italic">
-          Enter this on the Home screen of your ColegaPoints app. Expires in 10 min.
+          {t('group.sync_expiration')}
         </p>
         <button id="sync-copy-btn" class="btn btn-ghost mt-4 w-full py-2 text-xs uppercase">
-          📋 Copy Code
+          {t('group.copy_code')}
         </button>
       </div>
     </div>
@@ -155,8 +159,8 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
       class="card animate-fade-in mt-8 flex hidden items-center justify-between bg-[var(--surface-alt)] p-5"
     >
       <div>
-        <p class="text-lg leading-none font-black uppercase">Push Notifications</p>
-        <p class="mt-1 text-sm font-bold text-[var(--muted)] italic">Get notified on updates</p>
+        <p class="text-lg leading-none font-black uppercase">{t('group.push_notifications')}</p>
+        <p class="mt-1 text-sm font-bold text-[var(--muted)] italic">{t('group.push_desc')}</p>
       </div>
       <button
         id="push-toggle-btn"
@@ -177,22 +181,24 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
     >
       <div class="card animate-pop-in my-auto w-full max-w-sm p-8 sm:my-0">
         <div class="mb-6 text-center text-5xl">🚪</div>
-        <h3 class="mb-3 text-center text-3xl font-black uppercase italic">Leave group?</h3>
-        <p class="mb-8 text-center text-base leading-tight font-bold italic">
-          You'll be removed from <span
-            id="leave-group-name"
-            class="bg-[var(--accent)] px-1 underline"></span>. Your history stays, but the squad
-          will miss you.
-        </p>
+        <h3 class="mb-3 text-center text-3xl font-black uppercase italic">
+          {t('group.leave_modal_title')}
+        </h3>
+        <p
+          class="mb-8 text-center text-base leading-tight font-bold italic"
+          set:html={t('group.leave_modal_body', {
+            groupName: `<span id="leave-group-name" class="bg-[var(--accent)] px-1 underline">${group.name}</span>`,
+          })}
+        />
         <div class="flex gap-4">
           <button id="leave-cancel-btn" class="btn btn-ghost flex-1 py-4 font-black uppercase">
-            Cancel
+            {t('group.leave_cancel')}
           </button>
           <button
             id="leave-confirm-btn"
             class="btn btn-danger flex-1 py-4 font-black uppercase italic shadow-lg"
           >
-            Leave
+            {t('group.leave_confirm')}
           </button>
         </div>
         <p
@@ -208,10 +214,13 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
 <script>
   import { storage } from '../../lib/storage';
   import { leaveGroup, subscribePush, createSyncCode } from '../../lib/api';
+  import { getClientLocale, useTranslation } from '../../lib/i18n';
+
+  const locale = getClientLocale();
+  const t = useTranslation(locale);
 
   const container = document.getElementById('group-page-container') as HTMLElement;
   const groupId = container.dataset.groupId!;
-  const groupName = container.dataset.groupName!;
   const vapidPublicKey = container.dataset.vapidPublicKey!;
 
   // ── Init ────────────────────────────────────────────────────────────────────
@@ -242,16 +251,16 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
 
     genBtn?.addEventListener('click', async () => {
       genBtn.disabled = true;
-      genBtn.textContent = 'Generating…';
+      genBtn.textContent = t('group.generating');
       try {
         const code = await createSyncCode(groupId, saved.id);
         if (codeText) codeText.textContent = code;
         codeContainer?.classList.remove('hidden');
         genBtn.classList.add('hidden');
       } catch {
-        alert('Failed to generate code. Try again.');
+        alert(t('group.sync_failed'));
         genBtn.disabled = false;
-        genBtn.textContent = 'Get Sync Code';
+        genBtn.textContent = t('group.get_sync_code');
       }
     });
 
@@ -271,9 +280,9 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
   document.getElementById('copy-invite-btn')?.addEventListener('click', async () => {
     const btn = document.getElementById('copy-invite-btn')!;
     await navigator.clipboard.writeText(window.location.href);
-    btn.textContent = '✅ Copied!';
+    btn.textContent = t('group.copied');
     setTimeout(() => {
-      btn.textContent = '🔗 Invite';
+      btn.textContent = t('group.invite');
     }, 2000);
   });
 
@@ -361,11 +370,8 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
 
   // ── Leave group ────────────────────────────────────────────────────────────────
   const leaveModal = document.getElementById('leave-modal');
-  const leaveNameEl = document.getElementById('leave-group-name');
   const leaveErrorEl = document.getElementById('leave-error');
   const leaveConfirm = document.getElementById('leave-confirm-btn') as HTMLButtonElement;
-
-  if (leaveNameEl) leaveNameEl.textContent = groupName;
 
   function openLeaveModal() {
     leaveModal?.classList.remove('hidden');
@@ -388,7 +394,7 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
   leaveConfirm?.addEventListener('click', async () => {
     if (!saved) return;
     leaveConfirm.disabled = true;
-    leaveConfirm.textContent = 'Leaving…';
+    leaveConfirm.textContent = t('group.leaving');
     leaveErrorEl?.classList.add('hidden');
 
     try {
@@ -402,7 +408,7 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
         leaveErrorEl.classList.remove('hidden');
       }
       leaveConfirm.disabled = false;
-      leaveConfirm.textContent = 'Leave';
+      leaveConfirm.textContent = t('group.leave_confirm');
     }
   });
 </script>

@@ -1,5 +1,9 @@
 ---
 import { AVAILABLE_EMOJIS } from '../lib/constants';
+import { getLocale, useTranslation } from '../lib/i18n';
+
+const locale = getLocale(Astro.cookies, Astro.request.headers);
+const t = useTranslation(locale);
 
 interface Props {
   groupId: string;
@@ -17,20 +21,20 @@ const { groupId, groupName, groupDescription } = Astro.props;
   data-group-name={groupName}
   data-group-description={groupDescription}
 >
-  <h2 class="mb-6 text-3xl font-black uppercase italic">👋 Join the squad</h2>
+  <h2 class="mb-6 text-3xl font-black uppercase italic">{t('join.title')}</h2>
   <div class="flex flex-col gap-5">
     <div>
-      <label class="mb-1 block text-sm font-black uppercase">Your name</label>
+      <label class="mb-1 block text-sm font-black uppercase">{t('join.name_label')}</label>
       <input
         id="join-name"
         type="text"
-        placeholder="What do your colegas call you?"
+        placeholder={t('join.name_placeholder')}
         maxlength="30"
         class="input"
       />
     </div>
     <div>
-      <label class="mb-3 block text-sm font-black uppercase">Pick your emoji</label>
+      <label class="mb-3 block text-sm font-black uppercase">{t('join.emoji_label')}</label>
       <div id="emoji-picker" class="flex flex-wrap gap-2">
         {
           AVAILABLE_EMOJIS.map((e) => (
@@ -46,7 +50,7 @@ const { groupId, groupName, groupDescription } = Astro.props;
       </div>
     </div>
     <button id="join-btn" class="btn btn-primary mt-2 w-full py-4 text-xl uppercase italic">
-      Join the squad →
+      {t('join.button')}
     </button>
     <p
       id="join-error"
@@ -59,6 +63,10 @@ const { groupId, groupName, groupDescription } = Astro.props;
 <script>
   import { storage } from '../lib/storage';
   import { joinGroup } from '../lib/api';
+  import { getClientLocale, useTranslation } from '../lib/i18n';
+
+  const locale = getClientLocale();
+  const t = useTranslation(locale);
 
   const container = document.getElementById('join-prompt') as HTMLElement;
   if (container) {
@@ -92,13 +100,13 @@ const { groupId, groupName, groupDescription } = Astro.props;
       const name = nameInput?.value.trim();
       const errorEl = container.querySelector('#join-error') as HTMLElement;
       if (!name) {
-        errorEl.textContent = 'Enter your name!';
+        errorEl.textContent = t('join.error_name');
         errorEl.classList.remove('hidden');
         return;
       }
       const btn = container.querySelector('#join-btn') as HTMLButtonElement;
       btn.disabled = true;
-      btn.textContent = 'Joining…';
+      btn.textContent = t('join.joining');
 
       try {
         const json = await joinGroup(groupId, name, selectedEmoji);
@@ -109,7 +117,7 @@ const { groupId, groupName, groupDescription } = Astro.props;
         errorEl.textContent = err.message;
         errorEl.classList.remove('hidden');
         btn.disabled = false;
-        btn.textContent = 'Join the squad →';
+        btn.textContent = t('join.button');
       }
     });
   }

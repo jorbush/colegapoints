@@ -1,5 +1,11 @@
 ---
 import pkg from '../../package.json';
+import LanguagePicker from './LanguagePicker.astro';
+import { getLocale, useTranslation } from '../lib/i18n';
+
+const locale = getLocale(Astro.cookies, Astro.request.headers);
+const t = useTranslation(locale);
+
 const version = pkg.version;
 const versionUrl = `https://github.com/jorbush/colegapoints/releases/tag/v${version}`;
 const githubProfileUrl = 'https://github.com/jorbush';
@@ -12,7 +18,7 @@ const githubProfileUrl = 'https://github.com/jorbush';
     class="mx-auto flex max-w-lg flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left"
   >
     <div class="text-sm font-bold text-[var(--text)]">
-      Created by{' '}
+      {t('footer.created_by')}{' '}
       <a
         href={githubProfileUrl}
         target="_blank"
@@ -23,7 +29,8 @@ const githubProfileUrl = 'https://github.com/jorbush';
       </a>
     </div>
 
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-4">
+      <LanguagePicker />
       <a
         href={versionUrl}
         target="_blank"

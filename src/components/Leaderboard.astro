@@ -1,5 +1,9 @@
 ---
 import { formatPoints } from '../lib/points';
+import { getLocale, useTranslation } from '../lib/i18n';
+
+const locale = getLocale(Astro.cookies, Astro.request.headers);
+const t = useTranslation(locale);
 
 interface Member {
   id: string;
@@ -23,14 +27,14 @@ const sorted = [...members].sort((a, b) => (pointTotals[b.id] ?? 0) - (pointTota
   <h2
     class="mb-6 inline-block border-2 border-[var(--border)] bg-[var(--accent)] px-2 text-sm font-black tracking-widest uppercase"
   >
-    Leaderboard
+    {t('leaderboard.title')}
   </h2>
   {
     sorted.length === 0 ? (
       <div class="card p-12 text-center">
         <div class="mb-4 text-6xl">🏜️</div>
-        <p class="text-2xl font-black uppercase italic">No colegas yet.</p>
-        <p class="mt-2 text-lg font-bold">Share the link to get the party started!</p>
+        <p class="text-2xl font-black uppercase italic">{t('leaderboard.no_colegas')}</p>
+        <p class="mt-2 text-lg font-bold">{t('leaderboard.no_colegas_desc')}</p>
       </div>
     ) : (
       <ul class="stagger flex flex-col gap-4">
@@ -56,11 +60,13 @@ const sorted = [...members].sort((a, b) => (pointTotals[b.id] ?? 0) - (pointTota
                   </span>
                   <div class="flex flex-shrink-0 items-center gap-1.5">
                     {medal && <span class="text-xl">{medal}</span>}
-                    {isTop && <span class="tag tag-brand">Top Colega</span>}
+                    {isTop && <span class="tag tag-brand">{t('leaderboard.top_colega')}</span>}
                   </div>
                 </div>
                 <div class="mt-1 text-sm font-bold italic">
-                  Joined {new Date(m.joinedAt).toLocaleDateString()}
+                  {t('leaderboard.joined', {
+                    date: new Date(m.joinedAt).toLocaleDateString(locale),
+                  })}
                 </div>
               </div>
               <div
