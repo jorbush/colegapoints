@@ -120,14 +120,23 @@ Add a point event (give or take points). Can be sent to a single member or multi
 
 ### `POST /api/groups/[id]/subscribe`
 
-Subscribe to push notifications for a group.
+Subscribe to or unsubscribe from push notifications for a group.
 
-**Body:**
+**Body (Subscribe):**
 
 ```json
 {
   "memberId": "mem_xyz123",
   "subscription": { ...pushSubscriptionObject... }
+}
+```
+
+**Body (Unsubscribe):**
+
+```json
+{
+  "memberId": "mem_xyz123",
+  "subscription": null
 }
 ```
 
