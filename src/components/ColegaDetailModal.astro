@@ -248,7 +248,8 @@ const { members, events } = Astro.props;
       joinedEl.textContent = `Joined ${joinedDate.toLocaleDateString()}`;
 
       // Show edit button if it's the current user
-      const groupId = (document.getElementById('group-page-container') as HTMLElement)?.dataset.groupId || '';
+      const groupId =
+        (document.getElementById('group-page-container') as HTMLElement)?.dataset.groupId || '';
       const saved = storage.getMember(groupId);
       const editBtn = modal.querySelector('#edit-profile-btn') as HTMLElement;
 
