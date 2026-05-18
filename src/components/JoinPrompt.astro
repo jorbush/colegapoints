@@ -1,4 +1,6 @@
 ---
+import { AVAILABLE_EMOJIS } from '../lib/constants';
+
 interface Props {
   groupId: string;
   groupName: string;
@@ -31,28 +33,7 @@ const { groupId, groupName, groupDescription } = Astro.props;
       <label class="mb-3 block text-sm font-black uppercase">Pick your emoji</label>
       <div id="emoji-picker" class="flex flex-wrap gap-2">
         {
-          [
-            '😎',
-            '🤩',
-            '🦁',
-            '🐻',
-            '🦊',
-            '🐸',
-            '🐧',
-            '🐙',
-            '🦋',
-            '🌵',
-            '🍕',
-            '🍍',
-            '🎸',
-            '🚀',
-            '⚡',
-            '🔥',
-            '💎',
-            '🏆',
-            '🌊',
-            '🎭',
-          ].map((e) => (
+          AVAILABLE_EMOJIS.map((e) => (
             <button
               type="button"
               data-emoji={e}

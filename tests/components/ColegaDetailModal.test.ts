@@ -61,9 +61,16 @@ describe('ColegaDetailModal component', () => {
 
     // Check title and details structure
     expect(result).toContain('Colega Profile');
+    expect(result).toContain('id="detail-info-header"');
     expect(result).toContain('id="detail-avatar"');
     expect(result).toContain('id="detail-name"');
     expect(result).toContain('id="detail-joined"');
+
+    // Check edit button and form existence
+    expect(result).toContain('id="edit-profile-btn"');
+    expect(result).toContain('id="edit-profile-form"');
+    expect(result).toContain('id="edit-name"');
+    expect(result).toContain('id="edit-emoji-picker"');
 
     // Check key metrics boxes
     expect(result).toContain('id="detail-points"');

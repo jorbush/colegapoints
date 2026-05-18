@@ -178,7 +178,7 @@ Redeem a sync code to transfer membership data to a new browser session. Redeemi
 
 **Response (200 OK):**
 
-```json
+````json
 {
   "member": {
     "id": "mem_xyz123",
@@ -195,4 +195,33 @@ Redeem a sync code to transfer membership data to a new browser session. Redeemi
     "createdAt": "2026-05-17T09:00:00.000Z"
   }
 }
+
+---
+
+## Members
+
+### `PATCH /api/members/[id]`
+
+Update a member's name and emoji.
+
+**Body:**
+
+```json
+{
+  "requestingMemberId": "mem_xyz123",
+  "name": "Ash Ketchum",
+  "emoji": "🍍"
+}
+````
+
+**Response (200 OK):**
+
+```json
+{
+  "ok": true
+}
+```
+
+```
+
 ```

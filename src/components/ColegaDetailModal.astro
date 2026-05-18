@@ -1,4 +1,6 @@
 ---
+import { AVAILABLE_EMOJIS } from '../lib/constants';
+
 interface Props {
   members: { id: string; name: string; avatarEmoji: string; joinedAt: number | Date | string }[];
   events: {
@@ -37,7 +39,10 @@ const { members, events } = Astro.props;
     <!-- Modal Content -->
     <div class="flex flex-col gap-6">
       <!-- Member Info Header -->
-      <div class="flex items-center gap-4 border-b-4 border-[var(--border)] pb-5">
+      <div
+        id="detail-info-header"
+        class="flex items-center gap-4 border-b-4 border-[var(--border)] pb-5"
+      >
         <div
           id="detail-avatar"
           class="flex h-16 w-16 animate-bounce items-center justify-center border-4 border-[var(--border)] bg-white text-4xl shadow-[3px_3px_0px_var(--border)] select-none"
@@ -46,11 +51,63 @@ const { members, events } = Astro.props;
           😊
         </div>
         <div class="min-w-0 flex-1">
-          <h4 id="detail-name" class="truncate text-2xl font-black tracking-tight uppercase">
-            Name
-          </h4>
+          <div class="flex items-center justify-between gap-2">
+            <h4 id="detail-name" class="truncate text-2xl font-black tracking-tight uppercase">
+              Name
+            </h4>
+            <button
+              id="edit-profile-btn"
+              class="btn btn-ghost h-8 border-2 border-[var(--border)] px-2 py-0.5 text-xs font-black tracking-wider uppercase shadow-[1px_1px_0px_var(--border)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+              style="display: none;"
+              type="button">Edit</button
+            >
+          </div>
           <p id="detail-joined" class="text-xs font-bold text-[var(--muted)] italic">Joined Date</p>
         </div>
+      </div>
+
+      <!-- Edit Profile Form (hidden by default) -->
+      <div
+        id="edit-profile-form"
+        class="hidden flex-col gap-4 border-b-4 border-[var(--border)] pb-5"
+      >
+        <div>
+          <label class="mb-1 block text-xs font-black tracking-wider text-[var(--muted)] uppercase"
+            >Your name</label
+          >
+          <input id="edit-name" type="text" placeholder="Name" maxlength="30" class="input" />
+        </div>
+        <div>
+          <label class="mb-2 block text-xs font-black tracking-wider text-[var(--muted)] uppercase"
+            >Pick your emoji</label
+          >
+          <div id="edit-emoji-picker" class="flex flex-wrap gap-2">
+            {
+              AVAILABLE_EMOJIS.map((e) => (
+                <button
+                  type="button"
+                  data-emoji={e}
+                  class="edit-emoji-btn border-2 border-[var(--border)] bg-white p-2 text-2xl shadow-[2px_2px_0px_var(--border)] transition-transform hover:translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0 active:translate-y-0 active:shadow-none"
+                >
+                  {e}
+                </button>
+              ))
+            }
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <button id="save-profile-btn" class="btn btn-primary flex-1 py-2 text-sm uppercase italic"
+            >Save</button
+          >
+          <button id="cancel-profile-btn" class="btn btn-ghost flex-1 py-2 text-sm uppercase"
+            >Cancel</button
+          >
+        </div>
+        <p
+          id="edit-error"
+          class="hidden border-2 border-[var(--negative)] bg-[var(--negative-bg)] p-2 text-center text-sm font-bold text-[var(--negative)]"
+        >
+        </p>
       </div>
 
       <!-- Point Display & Rank -->
@@ -128,6 +185,9 @@ const { members, events } = Astro.props;
 </div>
 
 <script>
+  import { storage } from '../lib/storage';
+  import { updateMember } from '../lib/api';
+
   const modal = document.getElementById('colega-detail-modal') as HTMLElement;
   if (modal) {
     const members = JSON.parse(modal.dataset.members!) as any[];
@@ -143,9 +203,38 @@ const { members, events } = Astro.props;
       if (e.target === modal) closeModal();
     });
 
+    let selectedEmoji = '';
+    const emojiPicker = modal.querySelector('#edit-emoji-picker')!;
+    const emojiBtns = emojiPicker.querySelectorAll('.edit-emoji-btn');
+    emojiBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        emojiBtns.forEach((b) => {
+          (b as HTMLElement).classList.remove(
+            'bg-[var(--accent)]',
+            'translate-x-0.5',
+            '-translate-y-0.5',
+            'shadow-none'
+          );
+          (b as HTMLElement).style.boxShadow = '2px 2px 0px var(--border)';
+        });
+        btn.classList.add('bg-[var(--accent)]', 'translate-x-0.5', '-translate-y-0.5');
+        (btn as HTMLElement).style.boxShadow = 'none';
+        selectedEmoji = (btn as HTMLElement).dataset.emoji!;
+      });
+    });
+
     const openModalForMember = (memberId: string) => {
       const member = members.find((m) => m.id === memberId);
       if (!member) return;
+
+      // Reset edit view
+      const infoHeader = modal.querySelector('#detail-info-header') as HTMLElement;
+      const editForm = modal.querySelector('#edit-profile-form') as HTMLElement;
+      const errorEl = modal.querySelector('#edit-error') as HTMLElement;
+
+      infoHeader.style.display = 'flex';
+      editForm.style.display = 'none';
+      errorEl.classList.add('hidden');
 
       // Update avatar & name & joined date
       const avatarEl = modal.querySelector('#detail-avatar')!;
@@ -157,6 +246,100 @@ const { members, events } = Astro.props;
       const joinedEl = modal.querySelector('#detail-joined')!;
       const joinedDate = new Date(member.joinedAt);
       joinedEl.textContent = `Joined ${joinedDate.toLocaleDateString()}`;
+
+      // Show edit button if it's the current user
+      const groupId = (document.getElementById('group-page-container') as HTMLElement)?.dataset
+        .groupId!;
+      const saved = storage.getMember(groupId);
+      const editBtn = modal.querySelector('#edit-profile-btn') as HTMLElement;
+
+      if (saved && saved.id === memberId) {
+        editBtn.style.display = 'inline-flex';
+      } else {
+        editBtn.style.display = 'none';
+      }
+
+      // Bind edit handlers
+      editBtn.onclick = () => {
+        infoHeader.style.display = 'none';
+        editForm.style.display = 'flex';
+
+        const nameInput = modal.querySelector('#edit-name') as HTMLInputElement;
+        nameInput.value = member.name;
+
+        selectedEmoji = member.avatarEmoji;
+        emojiBtns.forEach((b) => {
+          const btnEmoji = (b as HTMLElement).dataset.emoji!;
+          if (btnEmoji === selectedEmoji) {
+            (b as HTMLElement).classList.add(
+              'bg-[var(--accent)]',
+              'translate-x-0.5',
+              '-translate-y-0.5'
+            );
+            (b as HTMLElement).style.boxShadow = 'none';
+          } else {
+            (b as HTMLElement).classList.remove(
+              'bg-[var(--accent)]',
+              'translate-x-0.5',
+              '-translate-y-0.5',
+              'shadow-none'
+            );
+            (b as HTMLElement).style.boxShadow = '2px 2px 0px var(--border)';
+          }
+        });
+      };
+
+      const cancelBtn = modal.querySelector('#cancel-profile-btn') as HTMLElement;
+      cancelBtn.onclick = () => {
+        infoHeader.style.display = 'flex';
+        editForm.style.display = 'none';
+        errorEl.classList.add('hidden');
+      };
+
+      const saveBtn = modal.querySelector('#save-profile-btn') as HTMLButtonElement;
+      saveBtn.onclick = async () => {
+        const nameInput = modal.querySelector('#edit-name') as HTMLInputElement;
+        const name = nameInput.value.trim();
+
+        if (!name) {
+          errorEl.textContent = 'Name is required!';
+          errorEl.classList.remove('hidden');
+          return;
+        }
+
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving…';
+        errorEl.classList.add('hidden');
+
+        try {
+          await updateMember(memberId, {
+            requestingMemberId: saved.id,
+            name,
+            emoji: selectedEmoji,
+          });
+
+          // Update client storage
+          saved.name = name;
+          saved.avatarEmoji = selectedEmoji;
+          storage.saveMember(groupId, saved);
+
+          // Update group list in storage
+          const pageContainer = document.getElementById('group-page-container')!;
+          storage.saveGroupToList(
+            groupId,
+            pageContainer.dataset.groupName || '',
+            pageContainer.dataset.groupDescription || '',
+            { id: memberId, name, avatarEmoji: selectedEmoji }
+          );
+
+          window.location.reload();
+        } catch (err: any) {
+          errorEl.textContent = err.message;
+          errorEl.classList.remove('hidden');
+          saveBtn.disabled = false;
+          saveBtn.textContent = 'Save';
+        }
+      };
 
       // Calculate exact points
       const exactPoints = events

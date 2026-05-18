@@ -85,3 +85,17 @@ export async function redeemSyncCode(code: string) {
   if (!res.ok) throw new Error(json.error ?? 'Failed to redeem sync code');
   return json; // { member, group }
 }
+
+export async function updateMember(
+  memberId: string,
+  data: { requestingMemberId: string; name: string; emoji: string }
+) {
+  const res = await fetch(`/api/members/${memberId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error ?? 'Failed to update member');
+  return json;
+}
