@@ -35,10 +35,29 @@ describe('POST /api/groups/[id]/subscribe', () => {
     });
   });
 
-  it('returns 400 if data is missing', async () => {
+  it('clears a push subscription if subscription is null or missing', async () => {
+    (db.query.members.findFirst as any).mockResolvedValueOnce({ id: 'm1', groupId: 'g1' });
+
     const request = new Request('http://localhost/api/groups/g1/subscribe', {
       method: 'POST',
-      body: JSON.stringify({ memberId: 'm1' }),
+      body: JSON.stringify({
+        memberId: 'm1',
+        subscription: null,
+      }),
+    });
+
+    const response = await POST({ params: { id: 'g1' }, request } as any);
+    expect(response.status).toBe(200);
+    expect(db.update).toHaveBeenCalled();
+    expect((db as any).set).toHaveBeenCalledWith({
+      pushSubscription: null,
+    });
+  });
+
+  it('returns 400 if memberId is missing', async () => {
+    const request = new Request('http://localhost/api/groups/g1/subscribe', {
+      method: 'POST',
+      body: JSON.stringify({ subscription: { endpoint: 'https://example.com' } }),
     });
 
     const response = await POST({ params: { id: 'g1' }, request } as any);

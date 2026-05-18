@@ -315,6 +315,10 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
     const reg = await navigator.serviceWorker.register('/sw.js');
     const existingSub = await reg.pushManager.getSubscription();
 
+    const groupMembers = JSON.parse(container.dataset.groupMembers || '[]');
+    const currentDbMember = groupMembers.find((m: any) => m.id === member.id);
+    const isSubscribedInDb = !!currentDbMember?.pushSubscription;
+
     const setActive = (active: boolean) => {
       toggleBtn?.setAttribute('aria-checked', active ? 'true' : 'false');
       if (active) {
@@ -326,20 +330,26 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
       }
     };
 
-    setActive(!!existingSub);
+    setActive(!!existingSub && isSubscribedInDb);
 
     toggleBtn?.addEventListener('click', async () => {
       const isOn = toggleBtn.getAttribute('aria-checked') === 'true';
       if (isOn) {
-        const sub = await reg.pushManager.getSubscription();
-        await sub?.unsubscribe();
-        setActive(false);
+        try {
+          await subscribePush(groupId, member.id, null);
+          setActive(false);
+        } catch (e) {
+          console.error('Push unsubscribe failed:', e);
+        }
       } else {
         try {
-          const sub = await reg.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
-          });
+          let sub = await reg.pushManager.getSubscription();
+          if (!sub) {
+            sub = await reg.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+            });
+          }
           await subscribePush(groupId, member.id, sub.toJSON());
           setActive(true);
         } catch (e) {

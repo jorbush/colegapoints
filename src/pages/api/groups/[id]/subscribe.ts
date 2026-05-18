@@ -8,8 +8,8 @@ export const POST: APIRoute = async ({ params, request }) => {
   try {
     const body = await request.json();
     const { memberId, subscription } = body;
-    if (!memberId || !subscription) {
-      return new Response(JSON.stringify({ error: 'memberId and subscription required' }), {
+    if (!memberId) {
+      return new Response(JSON.stringify({ error: 'memberId required' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
@@ -25,7 +25,7 @@ export const POST: APIRoute = async ({ params, request }) => {
 
     await db
       .update(members)
-      .set({ pushSubscription: JSON.stringify(subscription) })
+      .set({ pushSubscription: subscription ? JSON.stringify(subscription) : null })
       .where(eq(members.id, memberId));
 
     return new Response(JSON.stringify({ ok: true }), {
