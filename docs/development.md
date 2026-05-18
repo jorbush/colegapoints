@@ -5,7 +5,7 @@ Follow these steps to set up ColegaPoints for local development.
 ## Prerequisites
 
 - **Node.js**: v22.12.0 or higher
-- **Package Manager**: npm
+- **Package Manager**: pnpm
 
 ## Getting Started
 
@@ -19,7 +19,7 @@ Follow these steps to set up ColegaPoints for local development.
 2. **Install dependencies**:
 
    ```sh
-   npm install
+   pnpm install
    ```
 
 3. **Configure Environment Variables**:
@@ -34,36 +34,36 @@ Follow these steps to set up ColegaPoints for local development.
    - Get the URL and Auth Token and add them to your `.env`.
    - Push the schema:
      ```sh
-     npm run db:push
+     pnpm db:push
      ```
 
 5. **Generate VAPID Keys**:
    Web Push requires VAPID keys for authentication.
 
    ```sh
-   npx web-push generate-vapid-keys
+   pnpm dlx web-push generate-vapid-keys
    ```
 
    Add the public and private keys to your `.env`.
 
 6. **Start the development server**:
    ```sh
-   npm run dev
+   pnpm dev
    ```
 
 ## Formatting
 
 We use **Prettier** with the `prettier-plugin-astro` and `prettier-plugin-tailwindcss` plugins to ensure consistent styling.
 
-- **Check formatting**: `npm run format:check`
-- **Fix formatting**: `npm run format`
+- **Check formatting**: `pnpm format:check`
+- **Fix formatting**: `pnpm format`
 
 ## Testing
 
 We use **Vitest** for unit and integration testing.
 
-- **Run all tests**: `npm run test`
-- **Watch mode**: `npx vitest`
+- **Run all tests**: `pnpm test`
+- **Watch mode**: `pnpm vitest`
 
 Tests are located in the `tests/` directory and mirror the application structure.
 

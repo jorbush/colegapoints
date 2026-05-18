@@ -22,15 +22,15 @@ ColegaPoints is a lightweight, community-driven point tracking system designed t
 # Clone and install
 git clone https://github.com/jorbush/colegapoints.git
 cd colegapoints
-npm install
+pnpm install
 
 # Setup environment
 cp .env.example .env
 # Fill in your Turso and VAPID keys!
 
 # Push schema and start
-npm run db:push
-npm run dev
+pnpm db:push
+pnpm dev
 ```
 
 ## 📚 Documentation
@@ -43,11 +43,11 @@ For more detailed information, check out our documentation:
 
 ## 🧞 Commands
 
-| Command             | Action                                      |
-| :------------------ | :------------------------------------------ |
-| `npm run dev`       | Starts local dev server at `localhost:4321` |
-| `npm run build`     | Build your production site to `./dist/`     |
-| `npm run test`      | Run the Vitest test suite                   |
-| `npm run format`    | Run Prettier to format the codebase         |
-| `npm run db:push`   | Push schema changes to the database         |
-| `npm run db:studio` | Open Drizzle Studio to browse data          |
+| Command          | Action                                      |
+| :--------------- | :------------------------------------------ |
+| `pnpm dev`       | Starts local dev server at `localhost:4321` |
+| `pnpm build`     | Build your production site to `./dist/`     |
+| `pnpm test`      | Run the Vitest test suite                   |
+| `pnpm format`    | Run Prettier to format the codebase         |
+| `pnpm db:push`   | Push schema changes to the database         |
+| `pnpm db:studio` | Open Drizzle Studio to browse data          |
