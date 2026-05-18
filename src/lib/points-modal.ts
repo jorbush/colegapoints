@@ -10,7 +10,7 @@ export function initPointsModal(modal: HTMLElement) {
   };
 
   // ── Target selection ────────────────────────────────────────────────────────
-  let selectedTargetIds: string[] = [];
+  const selectedTargetIds: string[] = [];
   const targetList = modal.querySelector('#target-member-list');
   const saved = storage.getMember(groupId);
   const savedId = saved?.id;
