@@ -248,7 +248,7 @@ const memberMap = Object.fromEntries(groupMembers.map((m) => [m.id, m]));
         if (codeText) codeText.textContent = code;
         codeContainer?.classList.remove('hidden');
         genBtn.classList.add('hidden');
-      } catch (err) {
+      } catch {
         alert('Failed to generate code. Try again.');
         genBtn.disabled = false;
         genBtn.textContent = 'Get Sync Code';

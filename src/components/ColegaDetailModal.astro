@@ -248,8 +248,7 @@ const { members, events } = Astro.props;
       joinedEl.textContent = `Joined ${joinedDate.toLocaleDateString()}`;
 
       // Show edit button if it's the current user
-      const groupId = (document.getElementById('group-page-container') as HTMLElement)?.dataset
-        .groupId!;
+      const groupId = (document.getElementById('group-page-container') as HTMLElement)?.dataset.groupId || '';
       const saved = storage.getMember(groupId);
       const editBtn = modal.querySelector('#edit-profile-btn') as HTMLElement;
 
@@ -427,8 +426,8 @@ const { members, events } = Astro.props;
           card.className =
             'card card-sm p-3 bg-white text-xs flex justify-between items-center gap-2 border-2 border-[var(--border)] shadow-[2px_2px_0px_var(--border)]';
 
-          let detailsHtml = '';
-          let tagHtml = '';
+          let detailsHtml: string;
+          let tagHtml: string;
 
           if (e.toMemberId === memberId) {
             // Received points
